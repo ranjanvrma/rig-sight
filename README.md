@@ -14,7 +14,7 @@ see [Deployment](#deployment))
 
 **Deliverables:** [submission/Rig_Sight_CA3_Presentation.pptx](submission/Rig_Sight_CA3_Presentation.pptx) ·
 [submission/Rig_Sight_CA3_Report.docx](submission/Rig_Sight_CA3_Report.docx) ·
-[architecture diagram](docs/figures/architecture_light.png) · [app screenshots](docs/figures/)
+[architecture diagram](docs/figures/architecture_original.png) · [app screenshots](docs/figures/)
 
 ## Problem
 
@@ -75,11 +75,17 @@ depth. Model confidence below 0.7 is flagged for the engineer.
 
 ## Architecture
 
-![Architecture](docs/figures/architecture_light.png)
+![Architecture](docs/figures/architecture_original.png)
 
 Hub and spoke: every agent hands back to the Orchestrator, and all of them read and write one shared state.
 Reference data, the SQLite incident memory and the LangGraph checkpointer sit outside the graph. The app's
 **Architecture** tab draws the same graph.
+
+This is the team's design diagram. The final code follows it, with a few differences: the Planner is rule based
+(not LLM based), `recursion_limit` is 50 rather than 25 (the worst case needs 32 steps), the model is
+`qwen2.5:3b` because `llama3.1:8b` does not fit in 4 GB of GPU memory, classification is one
+`classify_activities` tool over all lines, the chart is an Altair timeline plus NPT by category, and the Critic
+also checks gaps, overlaps, unparseable lines and the header.
 
 ## Technology
 
