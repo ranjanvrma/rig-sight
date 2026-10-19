@@ -1,0 +1,5 @@
+WELL W-01  DAY 14  DEPTH 4,830 m  COST USD 395,500
+00:00-06:00 Drilled 8-1/2 in hole from 4,480 m to 4,600 m
+06:00-08:30 Partial losses of 30 bbl/hr, lost returns at 4,600 m
+08:30-11:30 Pumped LCM pill and monitored losses until static
+11:30-24:00 Drilled 8-1/2 in hole from 4,600 m to 4,830 m

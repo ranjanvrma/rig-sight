@@ -1,0 +1,6 @@
+WELL W-03  DAY 13  DEPTH 2,200 m  COST USD 336,000
+00:00-08:00 Drilled 17-1/2 in hole from 1,850 m to 2,010 m
+08:00-10:00 Waited on replacement shaker screens, awaiting parts
+10:00-14:00 Drilled 17-1/2 in hole from 2,010 m to 2,090 m
+13:30-18:00 Circulated and conditioned mud, raised mud weight
+18:00-24:00 Drilled 17-1/2 in hole from 2,090 m to 2,200 m

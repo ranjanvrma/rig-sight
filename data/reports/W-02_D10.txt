@@ -1,0 +1,6 @@
+WELL W-02  DAY 10  DEPTH 2,080 m  COST USD 447,000
+00:00-08:00 Drilled 12-1/4 in hole from 1,850 m to 2,000 m
+08:00-10:00 MWD pulser failed, no signal at surface
+10:00-15:00 POOH to replace failed MWD tool
+15:00-20:00 RIH with backup MWD tool after failure
+20:00-24:00 Drilled 12-1/4 in hole from 2,000 m to 2,080 m

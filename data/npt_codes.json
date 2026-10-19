@@ -1,0 +1,45 @@
+{
+  "stuck_pipe": [
+    "stuck pipe",
+    "pipe stuck",
+    "differential sticking",
+    "jarred",
+    "jarring",
+    "worked pipe free",
+    "unable to rotate"
+  ],
+  "lost_circulation": [
+    "losses",
+    "lost returns",
+    "no returns",
+    "lcm",
+    "loss zone"
+  ],
+  "tool_failure": [
+    "mwd",
+    "failed",
+    "failure",
+    "stopped sending",
+    "no signal"
+  ],
+  "waiting_on_weather": [
+    "waited on weather",
+    "wow",
+    "wind",
+    "swell",
+    "weather"
+  ],
+  "waiting_on_equipment": [
+    "waited on",
+    "awaiting",
+    "repair",
+    "awaiting parts",
+    "tong"
+  ],
+  "well_control": [
+    "kick",
+    "shut in",
+    "influx",
+    "pit gain"
+  ]
+}

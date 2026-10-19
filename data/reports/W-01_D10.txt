@@ -1,0 +1,6 @@
+WELL W-01  DAY 10  DEPTH 3,640 m  COST USD 352,000
+00:00-06:00 Drilled 8-1/2 in hole from 3,120 m to 3,270 m
+06:00-06:30 Circulated bottoms up, flow check, well static
+06:30-12:00 Drilled 8-1/2 in hole from 3,270 m to 3,400 m
+12:00-13:00 Serviced top drive and rig
+13:00-24:00 Drilled 8-1/2 in hole from 3,400 m to 3,640 m

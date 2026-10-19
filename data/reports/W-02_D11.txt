@@ -1,0 +1,7 @@
+WELL W-02  DAY 11  DEPTH 2,220 m  COST USD 452,500
+00:00-06:00 Drilled 12-1/4 in hole from 2,080 m to 2,150 m
+06:00-06:30 Observed pit gain of 8 bbl, kick detected
+06:30-07:30 Shut in well and recorded pressures
+07:30-12:00 Circulated out influx with driller's method
+12:00-13:00 Flow checked, well static
+13:00-24:00 Drilled 12-1/4 in hole from 2,150 m to 2,220 m

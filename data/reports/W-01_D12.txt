@@ -1,0 +1,6 @@
+WELL W-01  DAY 12  DEPTH 4,140 m  COST USD 389,000
+00:00-05:00 Drilled 8-1/2 in hole from 3,820 m to 3,930 m
+05:00-08:30 Pipe stuck while making connection, differential sticking suspected
+08:30-12:30 Jarred down and worked pipe free
+12:30-14:00 Circulated hole clean after freeing stuck pipe
+14:00-24:00 Drilled 8-1/2 in hole from 3,930 m to 4,140 m

@@ -1,0 +1,4 @@
+WELL W-02  DAY 13  DEPTH 2,300 m  COST USD 405,000
+00:00-04:00 Drilled 12-1/4 in hole from 2,260 m to 2,300 m
+04:00-16:00 WOW, swell above 4 m, supply vessel could not offload
+16:00-24:00 Performed planned maintenance on mud pumps

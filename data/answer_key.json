@@ -1,0 +1,385 @@
+{
+  "W-01_D10": {
+    "well_id": "W-01",
+    "day": 10,
+    "total_hours": 24.0,
+    "npt_hours": {},
+    "total_npt": 0,
+    "npt_lines": [],
+    "line_labels": {
+      "2": "productive",
+      "3": "productive",
+      "4": "productive",
+      "5": "productive",
+      "6": "productive"
+    },
+    "depth_m": 3640,
+    "depth_vs_plan_m": 40,
+    "rop_m_per_h": 23.1,
+    "day_cost_usd": 352000,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-01_D11": {
+    "well_id": "W-01",
+    "day": 11,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "tool_failure": 16.0
+    },
+    "total_npt": 16.0,
+    "npt_lines": [
+      3,
+      4,
+      5,
+      6
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "tool_failure",
+      "4": "tool_failure",
+      "5": "tool_failure",
+      "6": "tool_failure",
+      "7": "productive"
+    },
+    "depth_m": 3820,
+    "depth_vs_plan_m": -40,
+    "rop_m_per_h": 22.5,
+    "day_cost_usd": 401500,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-01_D12": {
+    "well_id": "W-01",
+    "day": 12,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "stuck_pipe": 9.0
+    },
+    "total_npt": 9.0,
+    "npt_lines": [
+      3,
+      4,
+      5
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "stuck_pipe",
+      "4": "stuck_pipe",
+      "5": "stuck_pipe",
+      "6": "productive"
+    },
+    "depth_m": 4140,
+    "depth_vs_plan_m": 40,
+    "rop_m_per_h": 21.3,
+    "day_cost_usd": 389000,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-01_D13": {
+    "well_id": "W-01",
+    "day": 13,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "waiting_on_weather": 6.0
+    },
+    "total_npt": 6.0,
+    "npt_lines": [
+      4
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "productive",
+      "4": "waiting_on_weather",
+      "5": "productive"
+    },
+    "depth_m": 4480,
+    "depth_vs_plan_m": 80,
+    "rop_m_per_h": 20.0,
+    "day_cost_usd": 371000,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-01_D14": {
+    "well_id": "W-01",
+    "day": 14,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "lost_circulation": 5.5
+    },
+    "total_npt": 5.5,
+    "npt_lines": [
+      3,
+      4
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "lost_circulation",
+      "4": "lost_circulation",
+      "5": "productive"
+    },
+    "depth_m": 4830,
+    "depth_vs_plan_m": 30,
+    "rop_m_per_h": 18.9,
+    "day_cost_usd": 395500,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-02_D10": {
+    "well_id": "W-02",
+    "day": 10,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "tool_failure": 12.0
+    },
+    "total_npt": 12.0,
+    "npt_lines": [
+      3,
+      4,
+      5
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "tool_failure",
+      "4": "tool_failure",
+      "5": "tool_failure",
+      "6": "productive"
+    },
+    "depth_m": 2080,
+    "depth_vs_plan_m": 30,
+    "rop_m_per_h": 19.2,
+    "day_cost_usd": 447000,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-02_D11": {
+    "well_id": "W-02",
+    "day": 11,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "well_control": 6.0
+    },
+    "total_npt": 6.0,
+    "npt_lines": [
+      3,
+      4,
+      5
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "well_control",
+      "4": "well_control",
+      "5": "well_control",
+      "6": "productive",
+      "7": "productive"
+    },
+    "depth_m": 2220,
+    "depth_vs_plan_m": 20,
+    "rop_m_per_h": 8.2,
+    "day_cost_usd": 452500,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-02_D12": {
+    "well_id": "W-02",
+    "day": 12,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "lost_circulation": 15.0
+    },
+    "total_npt": 15.0,
+    "npt_lines": [
+      3,
+      4,
+      5
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "lost_circulation",
+      "4": "lost_circulation",
+      "5": "lost_circulation",
+      "6": "productive"
+    },
+    "depth_m": 2260,
+    "depth_vs_plan_m": -40,
+    "rop_m_per_h": 13.3,
+    "day_cost_usd": 468000,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-02_D13": {
+    "well_id": "W-02",
+    "day": 13,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "waiting_on_weather": 12.0
+    },
+    "total_npt": 12.0,
+    "npt_lines": [
+      3
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "waiting_on_weather",
+      "4": "productive"
+    },
+    "depth_m": 2300,
+    "depth_vs_plan_m": -180,
+    "rop_m_per_h": 10.0,
+    "day_cost_usd": 405000,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-02_D14": {
+    "well_id": "W-02",
+    "day": 14,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "tool_failure": 5.5,
+      "waiting_on_weather": 2.0,
+      "waiting_on_equipment": 0.5
+    },
+    "total_npt": 8.0,
+    "npt_lines": [
+      4,
+      5,
+      8
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "productive",
+      "4": "tool_failure",
+      "5": "waiting_on_weather",
+      "6": "productive",
+      "8": "waiting_on_equipment",
+      "7": "productive"
+    },
+    "depth_m": 2610,
+    "depth_vs_plan_m": -40,
+    "rop_m_per_h": 36.5,
+    "day_cost_usd": 418000,
+    "planted_error": "line hidden in REMARKS, first pass adds to 23.5 h",
+    "critic_should_fail_first_pass": true
+  },
+  "W-03_D10": {
+    "well_id": "W-03",
+    "day": 10,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "stuck_pipe": 7.0
+    },
+    "total_npt": 7.0,
+    "npt_lines": [
+      3,
+      4
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "stuck_pipe",
+      "4": "stuck_pipe",
+      "5": "productive"
+    },
+    "depth_m": 1150,
+    "depth_vs_plan_m": -30,
+    "rop_m_per_h": 17.6,
+    "day_cost_usd": 331000,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-03_D11": {
+    "well_id": "W-03",
+    "day": 11,
+    "total_hours": 24.0,
+    "npt_hours": {},
+    "total_npt": 0,
+    "npt_lines": [],
+    "line_labels": {
+      "2": "productive",
+      "3": "productive",
+      "4": "productive",
+      "5": "productive"
+    },
+    "depth_m": 1520,
+    "depth_vs_plan_m": 20,
+    "rop_m_per_h": 18.5,
+    "day_cost_usd": 318500,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-03_D12": {
+    "well_id": "W-03",
+    "day": 12,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "tool_failure": 6.0
+    },
+    "total_npt": 6.0,
+    "npt_lines": [
+      3,
+      4
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "tool_failure",
+      "4": "tool_failure",
+      "5": "productive"
+    },
+    "depth_m": 1850,
+    "depth_vs_plan_m": 50,
+    "rop_m_per_h": 18.3,
+    "day_cost_usd": 344000,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  },
+  "W-03_D13": {
+    "well_id": "W-03",
+    "day": 13,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "waiting_on_equipment": 2.0
+    },
+    "total_npt": 2.0,
+    "npt_lines": [
+      3
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "waiting_on_equipment",
+      "4": "productive",
+      "5": "productive",
+      "6": "productive"
+    },
+    "depth_m": 2200,
+    "depth_vs_plan_m": 50,
+    "rop_m_per_h": 19.4,
+    "day_cost_usd": 336000,
+    "planted_error": "two log lines overlap by 30 min, log adds to 24.5 h",
+    "critic_should_fail_first_pass": true
+  },
+  "W-03_D14": {
+    "well_id": "W-03",
+    "day": 14,
+    "total_hours": 24.0,
+    "npt_hours": {
+      "waiting_on_equipment": 4.0
+    },
+    "total_npt": 4.0,
+    "npt_lines": [
+      5
+    ],
+    "line_labels": {
+      "2": "productive",
+      "3": "productive",
+      "4": "productive",
+      "5": "waiting_on_equipment",
+      "6": "productive",
+      "7": "productive"
+    },
+    "depth_m": 2260,
+    "depth_vs_plan_m": 0,
+    "rop_m_per_h": 20.0,
+    "day_cost_usd": 362000,
+    "planted_error": null,
+    "critic_should_fail_first_pass": false
+  }
+}

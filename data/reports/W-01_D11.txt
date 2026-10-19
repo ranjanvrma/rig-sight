@@ -1,0 +1,7 @@
+WELL W-01  DAY 11  DEPTH 3,820 m  COST USD 401,500
+00:00-04:00 Drilled 8-1/2 in hole from 3,640 m to 3,730 m
+04:00-05:30 Mud motor failure, lost differential pressure, decided to trip
+05:30-11:30 POOH for failed mud motor
+11:30-13:30 Changed out failed mud motor and function tested on surface
+13:30-20:00 RIH with new BHA to bottom after motor failure
+20:00-24:00 Drilled 8-1/2 in hole from 3,730 m to 3,820 m

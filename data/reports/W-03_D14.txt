@@ -1,0 +1,7 @@
+WELL W-03  DAY 14  DEPTH 2,260 m  COST USD 362,000
+00:00-03:00 Drilled 17-1/2 in hole from 2,200 m to 2,260 m, section TD
+03:00-05:00 Circulated hole clean at TD
+05:00-10:00 POOH to run casing
+10:00-14:00 Waited on casing crew, awaiting equipment from shore base
+14:00-20:00 Ran 13-3/8 in casing to 2,255 m
+20:00-24:00 Cemented casing, waited on cement (WOC) as per program

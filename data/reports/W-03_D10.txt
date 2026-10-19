@@ -1,0 +1,5 @@
+WELL W-03  DAY 10  DEPTH 1,150 m  COST USD 331,000
+00:00-06:00 Drilled 17-1/2 in hole from 850 m to 960 m
+06:00-08:00 Pipe stuck at 960 m while backreaming, unable to rotate
+08:00-13:00 Jarred up and worked pipe free
+13:00-24:00 Drilled 17-1/2 in hole from 960 m to 1,150 m

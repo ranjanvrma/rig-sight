@@ -1,0 +1,8 @@
+WELL W-02  DAY 14  DEPTH 2,610 m  COST USD 418,000
+00:00-06:00 Drilled 12-1/4 in hole from 2,300 m to 2,450 m
+06:00-08:30 Drilled 12-1/4 in hole from 2,450 m to 2,610 m
+08:30-14:00 POOH, MWD tool stopped sending data
+14:00-16:00 Waited on weather, wind above crane limit
+16:00-20:30 Tested BOP as per schedule
+21:00-24:00 Slipped and cut drill line, serviced rig
+REMARKS: 20:30-21:00 Waited on tong repair before slip and cut

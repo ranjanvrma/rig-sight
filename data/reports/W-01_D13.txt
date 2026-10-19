@@ -1,0 +1,5 @@
+WELL W-01  DAY 13  DEPTH 4,480 m  COST USD 371,000
+00:00-07:00 Drilled 8-1/2 in hole from 4,140 m to 4,290 m
+07:00-08:00 Circulated bottoms up and flow checked
+08:00-14:00 Waited on weather, wind gusting 45 kn, crane operations suspended
+14:00-24:00 Drilled 8-1/2 in hole from 4,290 m to 4,480 m

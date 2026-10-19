@@ -1,0 +1,6 @@
+WELL W-02  DAY 12  DEPTH 2,260 m  COST USD 468,000
+00:00-03:00 Drilled 12-1/4 in hole from 2,220 m to 2,260 m
+03:00-07:00 Total losses, no returns at 2,260 m
+07:00-12:00 Pumped LCM pill, losses reduced to 10 bbl/hr
+12:00-18:00 Built mud volume and monitored losses
+18:00-24:00 Reamed hole back to bottom

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+checkpoints.db*
+results/eval_memory.sqlite
+.venv/
+.claude/
+# team notes: contain a PRN and a Canva edit link, keep them out of a public repo
+CA3_Reading_the_Rig_Project_Notes.pdf

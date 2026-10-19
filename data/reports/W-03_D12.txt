@@ -1,0 +1,5 @@
+WELL W-03  DAY 12  DEPTH 1,850 m  COST USD 344,000
+00:00-05:00 Drilled 17-1/2 in hole from 1,520 m to 1,610 m
+05:00-09:30 Top drive failed, troubleshot hydraulic leak
+09:30-11:00 Circulated hole while top drive failure was fixed
+11:00-24:00 Drilled 17-1/2 in hole from 1,610 m to 1,850 m

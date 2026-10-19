@@ -1,0 +1,5 @@
+WELL W-03  DAY 11  DEPTH 1,520 m  COST USD 318,500
+00:00-09:00 Drilled 17-1/2 in hole from 1,150 m to 1,330 m
+09:00-10:00 Circulated hole clean
+10:00-13:00 Wiper trip to shoe and back to bottom
+13:00-24:00 Drilled 17-1/2 in hole from 1,330 m to 1,520 m
