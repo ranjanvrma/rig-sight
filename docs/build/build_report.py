@@ -521,7 +521,7 @@ for name, capn, w in [
         ("app_w02d14_approved.png", "After the engineer rejected with 'line 7 is planned, not NPT' and then approved: "
                                     "8.0 h NPT, matching the answer key", 16.4),
         ("app_custom_error.png", "A pasted report with an invalid time range (12:00-2:00). The line is marked as a "
-                                 "source error and left unrepaired; the Critic fails without a pointless retry", 16.4),
+                                 "source error and left unrepaired. The Critic tries one retry for the 12:00-14:00 gap the bad line leaves, finds nothing to fix and stops (not three retries)", 16.4),
         ("app_evaluation.png", "Evaluation tab with the saved results for the local model and the mock", 16.4),
         ("app_memory.png", "Memory tab: seed incidents, failed cases written by the Critic and the engineer's "
                            "decisions from the runs above", 15.0)]:

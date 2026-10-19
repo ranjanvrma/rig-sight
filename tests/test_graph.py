@@ -120,7 +120,7 @@ def test_invalid_timestamp_is_flagged_not_repaired(run):
     assert s["critic_verdict"] == "FAIL"
     assert [i["line"] for i in s["parse_issues"]] == [5]
     assert all(a["source_line"] != 5 for a in s["activities"])      # the bad line is not guessed at
-    assert len(s["attempts"]) <= 2                                   # no pointless retries
+    assert len(s["attempts"]) <= 2                                   # at most one retry (for the gap), then it stops
     assert "not resolved" in s["draft_report"] and "Line 5 cannot be used" in s["draft_report"]
     assert s["total_hours"] == 22.0                                  # reported as found
 
