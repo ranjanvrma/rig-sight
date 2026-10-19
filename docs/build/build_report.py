@@ -161,7 +161,8 @@ P("", after=30)
 for line in ["TY B.Tech AI-ML, Division B", "Symbiosis Institute of Technology, Pune", "October 2026"]:
     P(line, align=WD_ALIGN_PARAGRAPH.CENTER, size=11.5, after=2)
 P("", after=40)
-P("Repository: github.com/ranjanvrma/rig-sight", align=WD_ALIGN_PARAGRAPH.CENTER, size=10, color=MUTED)
+P("Repository: github.com/ranjanvrma/rig-sight · Live demo: rig-sight.streamlit.app", align=WD_ALIGN_PARAGRAPH.CENTER,
+  size=10, color=MUTED)
 P("All data in this project is synthetic. This is a classroom proof of concept, not a certified engineering "
   "or safety system.", align=WD_ALIGN_PARAGRAPH.CENTER, size=9.5, color=MUTED, italic=True)
 
@@ -459,7 +460,22 @@ P("Human review uses LangGraph's interrupt(): the graph stops inside human_revie
 
 # ---------------- 13 UI ----------------
 H("12. Streamlit interface")
-P("All screenshots below were taken from the running application with the local qwen2.5:3b model.")
+P("The interface is a single Streamlit page with four tabs: Analyse report, Evaluation, Memory and Architecture.")
+H("12.1 Deployment", 2)
+P("The application is also deployed on Streamlit Community Cloud at https://rig-sight.streamlit.app/, built "
+  "from the main branch of the GitHub repository with app.py as the entry point; a push to main redeploys it. "
+  "It was checked on 19 October 2026: W-02 Day 14 gave 8.0 h NPT, the Critic failed the 23.5 h first pass and "
+  "the retry recovered the missing half hour.")
+B([("Model: ", "the cloud has no Ollama, so the hosted app runs on the mock keyword classifier. The sidebar and "
+               "every report say so, and choosing Ollama shows a warning and falls back to the mock."),
+   ("Results: ", "the Evaluation tab shows the committed qwen2.5:3b and mock results; re-running the evaluation "
+                 "there scores the mock only."),
+   ("State: ", "memory and checkpoints are written to temporary server storage. They are lost when the app "
+               "restarts, sleeps or redeploys, and are shared by everyone using it at the same time."),
+   ("Use: ", "the hosted app shows the workflow with no setup; the results with the real model, including the "
+             "engineer correcting the model's mistake, come from running it locally with Ollama.")])
+H("12.2 Screens", 2)
+P("All screenshots below were taken from the application running locally with the qwen2.5:3b model.")
 for name, capn, w in [
         ("app_w02d14_top.png", "W-02 Day 14 after a run: KPI tiles, the time log with NPT lines labelled "
                                "(category · hours · confidence) and the line recovered from REMARKS, and the live "
@@ -622,6 +638,7 @@ for i, r in enumerate(refs, 1):
     p.add_run(r)
 
 H("Appendix A. How to run", 1)
+P("Online, without installing anything: https://rig-sight.streamlit.app/ (mock classifier). Locally:")
 code("""pip install -r requirements-dev.txt
 python data/generate_data.py        # optional: rebuild the dataset
 python -m pytest                    # automated tests

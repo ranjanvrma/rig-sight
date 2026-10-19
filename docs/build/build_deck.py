@@ -180,7 +180,8 @@ text(s, *pdf_box(1102, 410, 1405, 805), [
 image_slide(12, notes="All synthetic, as the brief asks. We planted every event, so each report has a known answer. "
                       "One trap: 'waited on cement' is planned work, not NPT.")
 image_slide(13, notes="Clean day: zero NPT. Tool failure day: right hours and category. W-02 Day 14: the Critic "
-                      "catches the 23.5 h log. If the live demo does not fit, use the next slide.")
+                      "catches the 23.5 h log. If the live demo does not fit, use the next slide. Anyone can try it "
+                      "at rig-sight.streamlit.app (mock model; the real model runs locally).")
 
 # 14 · the app, live (new)
 s = prs.slides.add_slide(BLANK)
@@ -210,6 +211,10 @@ text(s, rx, cap_y, rw, Inches(1.0), [
     [("After review: ", {"bold": True, "color": ORANGE}),
      ("the engineer rejected one mislabel (line 7, slip and cut), the graph re-ran: 8.0 h NPT, approved.", {})]],
      size=12)
+text(s, Inches(0.55), Inches(6.85), Inches(12.2), Inches(0.4), [
+    [("Try it: ", {"bold": True, "color": ORANGE}),
+     ("rig-sight.streamlit.app  (hosted on Streamlit Community Cloud, runs on the mock classifier; the real model "
+      "runs locally with Ollama)", {})]], size=12)
 s.notes_slide.notes_text_frame.text = (
     "Backup for the live demo. Left is the run: the Critic fails the first pass at 23.5 h and the retry recovers the "
     "missing half hour. Right is the final report after the engineer rejected one mislabel and approved.")

@@ -9,6 +9,9 @@ Ranjan Verma and Rahul Narkhede
 
 All data is synthetic. This is a classroom proof of concept, not a certified engineering or safety tool.
 
+**Live demo:** [rig-sight.streamlit.app](https://rig-sight.streamlit.app/) (Streamlit Community Cloud, mock model;
+see [Deployment](#deployment))
+
 **Deliverables:** [submission/Rig_Sight_CA3_Presentation.pptx](submission/Rig_Sight_CA3_Presentation.pptx) ·
 [submission/Rig_Sight_CA3_Report.docx](submission/Rig_Sight_CA3_Report.docx) ·
 [architecture diagram](docs/figures/architecture_light.png) · [app screenshots](docs/figures/)
@@ -121,6 +124,10 @@ pip install -r requirements-dev.txt     # runtime deps + pytest (requirements.tx
 
 ## Run the app
 
+Online, nothing to install: **https://rig-sight.streamlit.app/** (runs on the mock classifier).
+
+Locally, with the option of the real model:
+
 ```bash
 streamlit run app.py
 ```
@@ -226,8 +233,31 @@ Live rig data feeds (WITSML) and many wells at once · learning from engineer co
 fine-tuned classifier evaluated on held-out reports · a morning NPT alert and cross-well trends · MCP connectors to
 company systems · support for the IADC standard DDR fields.
 
-## Deploying (optional)
+## Deployment
 
-Streamlit Community Cloud: push the repo, create an app with main file `app.py` and Python 3.11 or 3.12. The cloud
-has no Ollama, so the hosted app runs on the mock and says so; the Evaluation tab still shows the committed
-`qwen2.5:3b` results.
+The app is deployed on Streamlit Community Cloud at **https://rig-sight.streamlit.app/**, from this repository's
+`main` branch with `app.py` as the entry point. A push to `main` redeploys it automatically. It was checked on
+19 Oct 2026 running commit `b15108c`: W-02 Day 14 gave 8.0 h NPT, the Critic caught the 23.5 h log and the
+retry recovered the missing half hour.
+
+**What is different from running it locally**
+
+| | Live app (Streamlit Cloud) | Local (`streamlit run app.py`) |
+|---|---|---|
+| Language model | Mock keyword classifier only. The cloud has no Ollama, so choosing Ollama in the sidebar shows a warning and falls back to the mock | `qwen2.5:3b` through Ollama when it is running, else the mock |
+| What the app says | Sidebar: "Active: mock keyword classifier"; every report: "Lines labelled by: mock" | The model actually used |
+| W-02 Day 14 | 8.0 h NPT straight away (the mock does not make the slip-and-cut mistake) | With Ollama, 11.0 h first; reject with `line 7 is planned, not NPT` to get 8.0 h |
+| Evaluation tab | Shows the committed `qwen2.5:3b` and mock results from `results/`. **Re-run evaluation** there scores the mock only | Re-runs with whichever model is active |
+| Memory and checkpoints | Written to `runtime/` on the server. This is temporary: it is wiped when the app restarts, sleeps or redeploys, and it is shared by everyone using the app at the same time | Kept in `runtime/` until you delete it or press Reset |
+
+Settings (only needed if you deploy your own copy):
+
+1. Fork or push the repository to GitHub
+2. On [share.streamlit.io](https://share.streamlit.io) choose **Create app**, pick the repository, branch `main`
+   and main file `app.py`
+3. Under **Advanced settings** choose Python 3.11 or 3.12 (3.14 works locally but prints a LangChain warning).
+   No secrets or environment variables are needed: `RIG_LLM=auto` falls back to the mock when Ollama is absent
+4. `requirements.txt` and `.streamlit/config.toml` (dark theme, headless) are picked up automatically
+
+Use the live app to show the workflow to anyone without setup. For results with the real model (and the
+engineer correcting the model's mistake), run it locally with Ollama.
