@@ -244,9 +244,10 @@ company systems · support for the IADC standard DDR fields.
 ## Deployment
 
 The app is deployed on Streamlit Community Cloud at **https://rig-sight.streamlit.app/**, from this repository's
-`main` branch with `app.py` as the entry point. A push to `main` redeploys it automatically. It was checked on
-19 Oct 2026 running commit `b15108c`: W-02 Day 14 gave 8.0 h NPT, the Critic caught the 23.5 h log and the
-retry recovered the missing half hour.
+`main` branch with `app.py` as the entry point. A push to `main` normally redeploys it; if the live app looks older
+than the code here (for example, no **Reset memory** button in the Memory tab), reboot it from the Streamlit Cloud
+dashboard (**Manage app → ⋮ → Reboot app**). W-02 Day 14 on the live app gives 8.0 h NPT: the Critic catches the
+23.5 h log and the retry recovers the missing half hour.
 
 **What is different from running it locally**
 
