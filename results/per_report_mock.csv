@@ -8,12 +8,12 @@ W-02_D10,Graph with Critic,3,3,0,PASS,True,0,0.0,3,24.0,12.0,0,3,12.0
 W-02_D11,Graph with Critic,3,3,0,PASS,True,0,0.0,3,24.0,6.0,0,3,6.0
 W-02_D12,Graph with Critic,3,3,0,PASS,True,0,0.0,3,24.0,15.0,0,3,15.0
 W-02_D13,Graph with Critic,1,1,0,PASS,True,0,0.0,1,24.0,12.0,0,1,12.0
-W-02_D14,Graph with Critic,4,3,1,FAIL,True,0,3.0,3,24.0,11.0,1,4,8.0
+W-02_D14,Graph with Critic,3,3,0,FAIL,True,0,0.0,3,24.0,8.0,1,3,8.0
 W-03_D10,Graph with Critic,2,2,0,PASS,True,0,0.0,2,24.0,7.0,0,2,7.0
 W-03_D11,Graph with Critic,0,0,0,PASS,True,0,0,0,24.0,0,0,0,0
 W-03_D12,Graph with Critic,2,2,0,PASS,True,0,0.0,2,24.0,6.0,0,2,6.0
 W-03_D13,Graph with Critic,1,1,0,FAIL,True,0,0.0,1,24.0,2.0,1,1,2.0
-W-03_D14,Graph with Critic,2,1,1,PASS,True,0,4.0,1,24.0,8.0,0,2,4.0
+W-03_D14,Graph with Critic,2,1,1,PASS,True,1,4.0,1,24.0,8.0,0,2,4.0
 W-01_D10,Graph without Critic,0,0,0,,True,0,0,0,24.0,0,0,0,0
 W-01_D11,Graph without Critic,4,4,0,,True,0,0.0,4,24.0,16.0,0,4,16.0
 W-01_D12,Graph without Critic,3,3,0,,True,0,0.0,3,24.0,9.0,0,3,9.0
@@ -23,24 +23,9 @@ W-02_D10,Graph without Critic,3,3,0,,True,0,0.0,3,24.0,12.0,0,3,12.0
 W-02_D11,Graph without Critic,3,3,0,,True,0,0.0,3,24.0,6.0,0,3,6.0
 W-02_D12,Graph without Critic,3,3,0,,True,0,0.0,3,24.0,15.0,0,3,15.0
 W-02_D13,Graph without Critic,1,1,0,,True,0,0.0,1,24.0,12.0,0,1,12.0
-W-02_D14,Graph without Critic,3,2,1,,False,0,2.5,3,23.5,10.5,0,3,8.0
+W-02_D14,Graph without Critic,2,2,0,,False,0,0.5,3,23.5,7.5,0,2,8.0
 W-03_D10,Graph without Critic,2,2,0,,True,0,0.0,2,24.0,7.0,0,2,7.0
 W-03_D11,Graph without Critic,0,0,0,,True,0,0,0,24.0,0,0,0,0
 W-03_D12,Graph without Critic,2,2,0,,True,0,0.0,2,24.0,6.0,0,2,6.0
 W-03_D13,Graph without Critic,1,1,0,,False,0,0.0,1,24.5,2.0,0,1,2.0
 W-03_D14,Graph without Critic,2,1,1,,True,0,4.0,1,24.0,8.0,0,2,4.0
-W-01_D10,Single-prompt chatbot,0,0,0,,True,,0,0,24.0,0,,0,0
-W-01_D11,Single-prompt chatbot,6,4,2,,True,,3.0,4,24.0,19.0,,6,16.0
-W-01_D12,Single-prompt chatbot,6,3,2,,False,,5.0,3,11.0,4.0,,5,9.0
-W-01_D13,Single-prompt chatbot,2,1,1,,False,,4.0,1,14.0,10.0,,2,6.0
-W-01_D14,Single-prompt chatbot,3,2,1,,False,,3.0,2,16.5,2.5,,3,5.5
-W-02_D10,Single-prompt chatbot,5,3,2,,False,,4.0,3,12.0,8.0,,5,12.0
-W-02_D11,Single-prompt chatbot,8,3,3,,False,,3.0,3,111.0,3.0,,6,6.0
-W-02_D12,Single-prompt chatbot,2,1,1,,False,,12.0,3,12.0,3.0,,2,15.0
-W-02_D13,Single-prompt chatbot,0,0,0,,False,,12.0,1,12.0,0,,0,12.0
-W-02_D14,Single-prompt chatbot,5,0,2,,False,,3.5,3,18.0,11.5,,3,8.0
-W-03_D10,Single-prompt chatbot,2,1,1,,False,,5.0,2,126.0,2.0,,2,7.0
-W-03_D11,Single-prompt chatbot,0,0,0,,False,,0,0,13.0,0,,0,0
-W-03_D12,Single-prompt chatbot,3,1,2,,False,,8.0,2,12.0,14.0,,3,6.0
-W-03_D13,Single-prompt chatbot,2,0,2,,False,,0.0,1,12.0,2.0,,2,2.0
-W-03_D14,Single-prompt chatbot,2,1,1,,False,,4.0,1,14.0,8.0,,2,4.0

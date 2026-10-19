@@ -1,13 +1,24 @@
 """Long term memory: past NPT incidents (cause -> fix), failed cases saved by the Critic
-and engineer decisions. One SQLite file, read by Research, written by Critic and Engineer."""
+and engineer decisions. One SQLite file, read by Research, written by Critic and Engineer.
+
+data/incidents.sqlite is the committed seed. The app reads and writes a working copy in runtime/,
+so using the demo never changes the repository. Delete runtime/ (or press Reset in the Memory tab)
+to start again from the seed."""
 import os
+import shutil
 import sqlite3
 from pathlib import Path
 
-DB = Path(os.getenv("RIG_MEMORY_DB", Path(__file__).parent / "data" / "incidents.sqlite"))
+ROOT = Path(__file__).parent
+SEED = ROOT / "data" / "incidents.sqlite"
+DEFAULT_DB = Path(os.getenv("RIG_MEMORY_DB", ROOT / "runtime" / "memory.sqlite"))
+DB = DEFAULT_DB
 
 
 def _con():
+    if not DB.exists():
+        DB.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy(SEED, DB)
     con = sqlite3.connect(DB)
     con.row_factory = sqlite3.Row
     return con
@@ -16,6 +27,16 @@ def _con():
 def set_db(path) -> None:
     global DB
     DB = Path(path)
+
+
+def use_default() -> None:
+    set_db(DEFAULT_DB)
+
+
+def reset() -> None:
+    """Throw away failed cases and engineer decisions; start again from the seed incidents."""
+    DB.unlink(missing_ok=True)
+    _con().close()
 
 
 def search_incidents(well_id: str, categories: list[str], limit: int = 4) -> list[dict]:

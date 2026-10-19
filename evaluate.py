@@ -3,9 +3,10 @@
 Three runs on the same reports and the same model:
   1. full graph (with Critic)   2. graph without Critic   3. single-prompt chatbot baseline
 Run: python evaluate.py            (RIG_LLM=mock|ollama|auto, default auto)
-Writes results/metrics.json and results/per_report.csv
+Writes results/metrics_<backend>.json and results/per_report_<backend>.csv (backend = ollama or mock)
 """
 import csv
+import os
 import json
 import shutil
 import time
@@ -82,7 +83,8 @@ def aggregate(rows: list[dict], keys: dict, critic: bool) -> dict:
 
 def main():
     OUT.mkdir(exist_ok=True)
-    eval_db = OUT / "eval_memory.sqlite"
+    eval_db = ROOT / "runtime" / "eval_memory.sqlite"
+    eval_db.parent.mkdir(exist_ok=True)
     shutil.copy(DATA / "incidents.sqlite", eval_db)
     memory.set_db(eval_db)
     keys = json.loads((DATA / "answer_key.json").read_text())
@@ -105,21 +107,38 @@ def main():
 
     name = "Single-prompt chatbot"
     if backend == "ollama":
-        rows, t0 = [], time.time()
-        for rid, key in keys.items():
-            text = (DATA / "reports" / f"{rid}.txt").read_text()
-            p = from_baseline(llm.single_prompt_baseline(text), text)
-            rows.append({"run": name, "report_id": rid, **score(p, key, text),
-                         "pred_npt": p["total_npt"], "true_npt": key["total_npt"], "pred_hours": p["total_hours"]})
-        runs[name] = aggregate(rows, keys, False) | {"seconds": round(time.time() - t0, 1)}
-        per_report += rows
+        # the chatbot's free-form answers vary from run to run, so run it several times and report the spread
+        repeats = int(os.getenv("RIG_BASELINE_REPEATS", "3"))
+        per_rep, t0 = [], time.time()
+        for rep in range(1, repeats + 1):
+            rows = []
+            for rid, key in keys.items():
+                text = (DATA / "reports" / f"{rid}.txt").read_text()
+                p = from_baseline(llm.single_prompt_baseline(text), text)
+                rows.append({"run": name, "repeat": rep, "report_id": rid, **score(p, key, text),
+                             "pred_npt": p["total_npt"], "true_npt": key["total_npt"], "pred_hours": p["total_hours"]})
+            per_rep.append(aggregate(rows, keys, False))
+            per_report += rows
+        maes = [r["npt_hours_mae"] for r in per_rep]
+        runs[name] = {
+            "npt_hours_mae": round(sum(maes) / repeats, 3),
+            "npt_hours_mae_range": [min(maes), max(maes)],
+            "category_accuracy": round(sum(r["category_accuracy"] for r in per_rep) / repeats, 3),
+            "critic_catch_rate": None,
+            "evidence_rate": round(sum(r["evidence_rate"] for r in per_rep) / repeats, 3),
+            "logs_adding_to_24h": " / ".join(r["logs_adding_to_24h"] for r in per_rep),
+            "reports_exact_npt": " / ".join(r["reports_exact_npt"] for r in per_rep),
+            "false_npt_lines": round(sum(r["false_npt_lines"] for r in per_rep) / repeats, 1),
+            "repeats": repeats, "per_repeat": per_rep, "seconds": round(time.time() - t0, 1),
+            "note": f"mean of {repeats} runs; '/' separates the runs",
+        }
     else:
         runs[name] = {"note": "needs a local LLM (Ollama); a keyword mock cannot stand in for a chatbot"}
 
     meta = {"backend": backend, "model": llm.MODEL if backend == "ollama" else "mock keyword classifier",
             "reports": len(keys), "generated": time.strftime("%Y-%m-%d %H:%M")}
-    (OUT / "metrics.json").write_text(json.dumps({"meta": meta, "runs": runs}, indent=2))
-    with open(OUT / "per_report.csv", "w", newline="") as f:
+    (OUT / f"metrics_{backend}.json").write_text(json.dumps({"meta": meta, "runs": runs}, indent=2))
+    with open(OUT / f"per_report_{backend}.csv", "w", newline="") as f:
         cols = sorted({k for r in per_report for k in r}, key=lambda c: (c not in ("run", "report_id"), c))
         w = csv.DictWriter(f, fieldnames=cols)
         w.writeheader()
@@ -130,7 +149,8 @@ def main():
     print("\n| Run | " + " | ".join(cols) + " |\n|" + "---|" * (len(cols) + 1))
     for name, m in runs.items():
         print(f"| {name} | " + " | ".join(str(m.get(c, "n/a")) if m.get(c) is not None else "n/a" for c in cols) + " |")
-    print(f"\nwrote {OUT / 'metrics.json'}")
+    memory.use_default()
+    print(f"\nwrote {OUT / f'metrics_{backend}.json'}")
 
 
 if __name__ == "__main__":

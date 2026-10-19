@@ -1,0 +1,185 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+  :root { --bg:#000; --panel:#111; --ink:#FFFAE5; --muted:#b9b2a0; --line:#6f6a5e; --orange:#F63B05;
+          --agent:#1d1d1d; --agentb:#FFFAE5; --tool:#2a1c3d; --toolb:#a78bfa; --mem:#3a1410; --memb:#F63B05;
+          --human:#3a2d00; --humanb:#f5c542; --ui:#0f2a22; --uib:#34d399; --router:#F63B05; --routerink:#000; }
+  body.light { --bg:#fff; --panel:#f6f6f4; --ink:#141414; --muted:#55524c; --line:#8a857b; --orange:#d93300;
+          --agent:#eef2ff; --agentb:#3b4fb8; --tool:#f3edff; --toolb:#6d4bd1; --mem:#fdecea; --memb:#c0392b;
+          --human:#fff6d6; --humanb:#b98900; --ui:#e8f7f0; --uib:#1f8a5a; --router:#d93300; --routerink:#fff; }
+  html,body { margin:0; background:var(--bg); }
+  svg { display:block; }
+  text { font-family: Inter, "Segoe UI", Arial, sans-serif; fill: var(--ink); }
+  .t { font-family: Anton, Impact, sans-serif; letter-spacing:.5px; }
+  .h { font-size:19px; font-weight:700; }
+  .s { font-size:13.5px; fill:var(--muted); }
+  .tag { font-size:11.5px; font-weight:700; letter-spacing:.8px; fill:var(--orange); }
+  .lab { font-size:12.5px; fill:var(--muted); }
+  .labr { font-size:12.5px; fill:var(--orange); font-weight:600; }
+  .agent { fill:var(--agent); stroke:var(--agentb); stroke-width:1.6; }
+  .tool { fill:var(--tool); stroke:var(--toolb); stroke-width:1.6; }
+  .mem { fill:var(--mem); stroke:var(--memb); stroke-width:1.6; }
+  .human { fill:var(--human); stroke:var(--humanb); stroke-width:1.8; }
+  .ui { fill:var(--ui); stroke:var(--uib); stroke-width:1.6; }
+  .plain { fill:var(--panel); stroke:var(--line); stroke-width:1.4; }
+  .ext { fill:none; stroke:var(--line); stroke-width:1.4; stroke-dasharray:6 5; }
+  .zone { fill:none; stroke:var(--line); stroke-width:1; stroke-dasharray:3 6; }
+  .e { stroke:var(--ink); stroke-width:1.8; fill:none; }
+  .c { stroke:var(--ink); stroke-width:1.6; fill:none; stroke-dasharray:7 5; }
+  .r { stroke:var(--orange); stroke-width:2.4; fill:none; stroke-dasharray:8 5; }
+  .d { stroke:var(--toolb); stroke-width:1.8; fill:none; stroke-dasharray:2 5; stroke-linecap:round; }
+  .f { stroke:var(--orange); stroke-width:3.4; fill:none; }
+  .io { stroke:var(--uib); stroke-width:1.6; fill:none; }
+</style></head>
+<body>
+<svg id="d" width="1600" height="960" viewBox="0 0 1600 960" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink)"/></marker>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--orange)"/></marker>
+    <marker id="ad" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--toolb)"/></marker>
+    <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--uib)"/></marker>
+  </defs>
+
+  <text x="40" y="44" class="t" font-size="30">READING THE RIG · LANGGRAPH ARCHITECTURE</text>
+  <text x="40" y="70" class="s">StateGraph(DDRState) · hub and spoke · every agent reads and writes one shared state and hands back to the Orchestrator</text>
+
+  <!-- graph zone -->
+  <rect x="24" y="92" width="1552" height="600" rx="14" class="zone"/>
+  <text x="40" y="114" class="tag">LANGGRAPH STATEGRAPH · ORCHESTRATION LAYER</text>
+
+  <!-- input -->
+  <rect x="44" y="134" width="230" height="74" rx="10" class="plain"/>
+  <text x="60" y="162" class="h">Synthetic DDR file</text>
+  <text x="60" y="186" class="s">data/reports/*.txt or pasted text</text>
+  <circle cx="318" cy="171" r="26" class="plain"/><text x="318" y="175" text-anchor="middle" font-size="11" font-weight="700">START</text>
+  <rect x="362" y="134" width="236" height="74" rx="10" class="plain"/>
+  <text x="378" y="162" class="h">ingest_report</text>
+  <text x="378" y="186" class="s">split header + time log · Python</text>
+  <path d="M274 171 H288" class="e" marker-end="url(#a)"/>
+  <path d="M344 171 H358" class="e" marker-end="url(#a)"/>
+
+  <!-- orchestrator -->
+  <polygon points="690,330 735,268 875,268 920,330 875,392 735,392" style="fill:var(--router)"/>
+  <text x="805" y="318" text-anchor="middle" class="t" font-size="24" style="fill:var(--routerink)">ORCHESTRATOR</text>
+  <text x="805" y="342" text-anchor="middle" font-size="14" font-weight="600" style="fill:var(--routerink)">route(state)</text>
+  <text x="805" y="362" text-anchor="middle" font-size="12.5" style="fill:var(--routerink)">plain Python · no LLM</text>
+  <path d="M520 208 C 560 250, 640 290, 690 316" class="e" marker-end="url(#a)"/>
+
+  <!-- planner / research -->
+  <rect x="80" y="246" width="330" height="96" rx="12" class="agent"/>
+  <text x="98" y="276" class="h">Planner Agent</text>
+  <text x="98" y="300" class="s">adaptive task list from the report</text>
+  <text x="98" y="320" class="s">(REMARKS? drilling? cost?) · rules</text>
+  <rect x="80" y="404" width="330" height="112" rx="12" class="agent"/>
+  <text x="98" y="434" class="h">Research Agent</text>
+  <text x="98" y="458" class="s">well plan, budget, NPT codes,</text>
+  <text x="98" y="478" class="s">similar past incidents · lookups</text>
+  <text x="98" y="498" class="s">missing data → warning, not crash</text>
+  <path d="M690 318 C 590 290, 500 288, 414 290" class="c" marker-end="url(#a)"/>
+  <text x="520" y="278" class="lab">no task_plan</text>
+  <path d="M410 312 C 520 330, 600 335, 690 334" class="e" marker-end="url(#a)"/>
+  <path d="M700 348 C 600 400, 500 440, 414 452" class="c" marker-end="url(#a)"/>
+  <text x="462" y="414" class="lab">need context</text>
+  <path d="M410 480 C 540 470, 640 420, 714 380" class="e" marker-end="url(#a)"/>
+
+  <!-- executor / tools / critic -->
+  <rect x="1190" y="246" width="330" height="96" rx="12" class="agent"/>
+  <text x="1208" y="276" class="h">Executor Agent</text>
+  <text x="1208" y="300" class="s">visit 1 parse · visit 2 classify + maths</text>
+  <text x="1208" y="320" class="s">visit 3 totals NPT in Python</text>
+  <rect x="1190" y="110" width="370" height="110" rx="12" class="tool"/>
+  <text x="1208" y="138" class="h">ToolNode (Python tools)</text>
+  <text x="1208" y="162" class="s">parse_time_log · classify_activities</text>
+  <text x="1208" y="182" class="s">sum_hours · calc_rop · depth_vs_plan</text>
+  <text x="1208" y="202" class="s">cost_vs_budget</text>
+  <path d="M1300 246 V224" class="d" marker-end="url(#ad)"/>
+  <path d="M1380 220 V242" class="d" marker-end="url(#ad)"/>
+  <text x="1388" y="238" class="lab" style="fill:var(--toolb)">tool_calls / results</text>
+
+  <rect x="1190" y="404" width="370" height="132" rx="12" class="agent"/>
+  <text x="1208" y="434" class="h">Critic Agent</text>
+  <text x="1208" y="458" class="s">24.0 h · gaps · overlaps · header</text>
+  <text x="1208" y="478" class="s">unparseable lines · categories</text>
+  <text x="1208" y="498" class="s">evidence line · NPT sum · depth</text>
+  <text x="1208" y="518" class="s">confidence &lt; 0.7 → flag for engineer</text>
+
+  <path d="M920 322 C 1010 300, 1100 292, 1186 292" class="c" marker-end="url(#a)"/>
+  <text x="980" y="286" class="lab">activities missing</text>
+  <path d="M1190 318 C 1090 330, 1000 336, 922 336" class="e" marker-end="url(#a)"/>
+  <path d="M906 352 C 1000 410, 1100 440, 1186 452" class="c" marker-end="url(#a)"/>
+  <text x="1088" y="410" class="lab">check results</text>
+  <path d="M1190 490 C 1060 480, 960 430, 890 382" class="e" marker-end="url(#a)"/>
+  <text x="1096" y="502" class="lab">verdict</text>
+  <!-- retry loop -->
+  <path d="M1560 470 C 1600 420, 1600 330, 1524 300" class="r" marker-end="url(#ar)"/>
+  <text x="1208" y="382" class="labr">FAIL + fix hints → Executor (only if fixable, ≤ 3 retries)</text>
+
+  <!-- llm -->
+  <rect x="660" y="128" width="330" height="86" rx="12" class="ext"/>
+  <text x="678" y="156" class="h">Local LLM · Ollama qwen2.5:3b</text>
+  <text x="678" y="180" class="s">or mock keyword classifier (fallback)</text>
+  <text x="678" y="200" class="s">reads text, never does arithmetic</text>
+  <path d="M1190 160 H994" class="d" marker-end="url(#ad)"/>
+  <text x="1010" y="152" class="lab" style="fill:var(--toolb)">classify_activities</text>
+
+  <!-- writer / human -->
+  <rect x="520" y="560" width="290" height="96" rx="12" class="plain"/>
+  <text x="538" y="590" class="h">report_writer</text>
+  <text x="538" y="614" class="s">Daily Insight Report from computed facts</text>
+  <text x="538" y="634" class="s">optional LLM rephrase (off by default)</text>
+  <rect x="890" y="560" width="300" height="96" rx="12" class="human"/>
+  <text x="908" y="590" class="h">human_review · Engineer</text>
+  <text x="908" y="614" class="s">interrupt() pauses the graph</text>
+  <text x="908" y="634" class="s">Command(resume=decision, comment)</text>
+  <circle cx="1262" cy="608" r="24" class="plain"/><text x="1249" y="613" class="s" style="fill:var(--ink)">END</text>
+  <path d="M760 392 C 720 450, 690 500, 670 556" class="f" marker-end="url(#ar)"/>
+  <text x="430" y="522" class="labr">PASS, not fixable, or</text>
+  <text x="430" y="540" class="labr">retries used up → draft</text>
+  <path d="M810 608 H886" class="f" marker-end="url(#ar)"/>
+  <path d="M1190 608 H1234" class="f" marker-end="url(#ar)"/>
+  <text x="1192" y="594" font-size="11.5" style="fill:var(--orange)" font-weight="600">approve</text>
+  <path d="M960 560 C 940 500, 900 440, 850 396" class="r" marker-end="url(#ar)"/>
+  <text x="968" y="522" class="labr">reject + comment</text>
+  <text x="968" y="540" class="labr">→ line overrides, re-run</text>
+  <path d="M700 214 C 690 330, 680 480, 660 556" class="d" marker-end="url(#ad)"/>
+
+  <!-- data zone -->
+  <text x="40" y="726" class="tag">TOOLS, DATA AND MEMORY · OUTSIDE THE GRAPH</text>
+  <rect x="44" y="742" width="330" height="96" rx="12" class="tool"/>
+  <text x="62" y="772" class="h">Reference data</text>
+  <text x="62" y="796" class="s">well_plan.csv · cost_budget.csv</text>
+  <text x="62" y="816" class="s">npt_codes.json (6 categories)</text>
+  <rect x="404" y="742" width="330" height="96" rx="12" class="mem"/>
+  <text x="422" y="772" class="h">Incident memory · SQLite</text>
+  <text x="422" y="796" class="s">past incidents (cause → fix)</text>
+  <text x="422" y="816" class="s">failed cases · engineer decisions</text>
+  <rect x="764" y="742" width="330" height="96" rx="12" class="plain"/>
+  <text x="782" y="772" class="h">Checkpointer · SqliteSaver</text>
+  <text x="782" y="796" class="s">DDRState saved after every step</text>
+  <text x="782" y="816" class="s">per thread_id → pause and resume</text>
+  <rect x="1124" y="742" width="436" height="96" rx="12" class="ui"/>
+  <text x="1142" y="772" class="h">Streamlit UI</text>
+  <text x="1142" y="796" class="s">report picker · live agent trace · timeline + NPT chart</text>
+  <text x="1142" y="816" class="s">insight report · Approve / Reject · evaluation · memory</text>
+  <path d="M200 516 V738" class="d" marker-start="url(#ad)" marker-end="url(#ad)"/>
+  <path d="M330 516 C 380 640, 480 690, 520 738" class="d" marker-end="url(#ad)"/>
+  <text x="248" y="640" class="lab" style="fill:var(--toolb)">lookups</text>
+  <path d="M1540 536 V706 H640 V738" class="r" marker-end="url(#ar)"/>
+  <text x="1360" y="700" class="labr">failed case → memory</text>
+  <path d="M1040 656 C 1020 700, 980 720, 960 738" class="d"/>
+  <path d="M1160 738 V662" class="io" marker-start="url(#ag)" marker-end="url(#ag)"/>
+  <text x="1170" y="730" class="lab" style="fill:var(--uib)">show draft / resume</text>
+
+  <!-- legend -->
+  <g transform="translate(44,870)">
+    <path d="M0 10 H40" class="e"/><text x="48" y="15" class="lab">fixed edge</text>
+    <path d="M150 10 H190" class="c"/><text x="198" y="15" class="lab">route() decides</text>
+    <path d="M330 10 H370" class="r"/><text x="378" y="15" class="lab">retry / feedback</text>
+    <path d="M510 10 H550" class="d"/><text x="558" y="15" class="lab">tool or data call</text>
+    <path d="M690 10 H730" class="f"/><text x="738" y="15" class="lab">towards approval</text>
+    <path d="M870 10 H910" class="io"/><text x="918" y="15" class="lab">UI I/O</text>
+    <text x="1010" y="15" class="lab">recursion_limit = 50 · worst case 32 steps · normal report 16 steps</text>
+  </g>
+</svg>
+<script>if (location.search.includes("light")) document.body.classList.add("light");</script>
+</body></html>

@@ -21,6 +21,14 @@ from tools import report_lines  # noqa: E402
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
 KEYS = json.loads((DATA / "answer_key.json").read_text())
+CUSTOM = "CUSTOM"
+SAMPLE_CUSTOM = """WELL W-02  DAY 15  DEPTH 2,700 m  COST USD 431,000
+00:00-05:00 Drilled 12-1/4 in hole from 2,610 m to 2,700 m
+05:00-07:30 Mud motor failure, POOH to change motor
+07:30-12:00 RIH with new motor
+12:00-2:00 Circulated and conditioned mud
+14:00-24:00 Waited on weather, swell above 4 m
+"""
 
 st.set_page_config(page_title="Reading the Rig", page_icon="🛢️", layout="wide")
 
@@ -97,6 +105,8 @@ def cfg():
 
 
 def tag_for(rid: str) -> str:
+    if rid == CUSTOM:
+        return "paste your own text"
     k = KEYS[rid]
     if k["critic_should_fail_first_pass"]:
         return "planted error"
@@ -146,14 +156,19 @@ def stream(inp, title: str):
     st.rerun()
 
 
-def annotated_report(text: str, acts: list[dict]) -> str:
+def annotated_report(text: str, acts: list[dict], issues: list[dict] | None = None) -> str:
     by_line = {a["source_line"]: a for a in acts}
+    bad = {i["line"]: i for i in issues or []}
     rows = []
     for n, line in report_lines(text).items():
         a = by_line.get(n)
         style, chip, note = "", "", ""
         cls = "row hdr" if n == 1 else "row"
-        if a:
+        if n in bad:
+            style = ' style="border-left-color:#ef4444; background:#ef444420"'
+            chip = '<span class="chip" style="background:#ef4444">not used · source error</span>'
+            note = f'<span class="note" style="color:#fca5a5">↳ {html.escape(bad[n]["detail"])}</span>'
+        elif a:
             c = CAT_COLORS.get(a["category"], "#888")
             if a["category"] != "productive":
                 style = f' style="border-left-color:{c}; background:{c}14"'
@@ -205,8 +220,9 @@ ss_init()
 with st.sidebar:
     st.markdown("### 🛢️ Reading the Rig")
     st.caption("Agentic AI for Daily Drilling Reports · CA-3")
-    rid = st.selectbox("Daily Drilling Report", list(KEYS),
-                       format_func=lambda r: f"{r.replace('_D', ' · Day ')}  —  {tag_for(r)}")
+    rid = st.selectbox("Daily Drilling Report", list(KEYS) + [CUSTOM],
+                       format_func=lambda r: ("✍ Custom report" if r == CUSTOM else r.replace('_D', ' · Day '))
+                       + f"  —  {tag_for(r)}")
     ok, status = llm.ollama_status()
     choice = st.radio("Language model", ["Mock (keyword rules)", f"Ollama · {llm.MODEL}"],
                       index=1 if llm.backend() == "ollama" else 0, help="Free local model through Ollama. "
@@ -224,7 +240,10 @@ with st.sidebar:
 
 if run:
     st.session_state.update(thread=f"{rid}-{uuid.uuid4().hex[:6]}", events=[], report=rid, critic=critic_on)
-    stream({"report_id": rid}, f"Agents working on {rid}…")
+    init = {"report_id": rid}
+    if rid == CUSTOM:
+        init["report_text"] = st.session_state.get("custom_text", SAMPLE_CUSTOM)
+    stream(init, f"Agents working on {rid}…")
 
 # ---------------- main ----------------
 
@@ -240,22 +259,37 @@ with tab_run:
     active = st.session_state.report == rid and st.session_state.thread
     snap = get_app(st.session_state.critic).get_state(cfg()) if active else None
     v = snap.values if snap else {}
-    text = v.get("report_text") or (DATA / "reports" / f"{rid}.txt").read_text()
-    k = KEYS[rid]
+    k = KEYS.get(rid)
+    if rid == CUSTOM:
+        text = v.get("report_text") or st.session_state.get("custom_text", SAMPLE_CUSTOM)
+    else:
+        text = v.get("report_text") or (DATA / "reports" / f"{rid}.txt").read_text()
 
-    tags = f'<span class="tag">{rid.replace("_D", " · Day ")}</span>'
-    tags += (f'<span class="tag err">planted error</span>' if k["critic_should_fail_first_pass"] else "")
+    tags = f'<span class="tag">{"Custom report" if rid == CUSTOM else rid.replace("_D", " · Day ")}</span>'
+    tags += (f'<span class="tag err">planted error</span>' if k and k["critic_should_fail_first_pass"] else "")
+    if v.get("critic_verdict") == "FAIL":
+        tags += '<span class="tag err">critic fail, unresolved</span>'
+    if rid == CUSTOM and active and "total_hours" in v:
+        if st.button("✎ Edit the report text"):
+            st.session_state.thread = None
+            st.rerun()
+
     if v.get("engineer_decision") == "approve":
         tags += '<span class="tag ok">approved</span>'
     if active and not st.session_state.critic:
         tags += '<span class="tag err">critic off</span>'
     st.markdown(tags, unsafe_allow_html=True)
 
-    if not v.get("activities"):
+    if "total_hours" not in v:
         c1, c2 = st.columns([1.15, 1])
         with c1:
             st.subheader("Daily Drilling Report")
-            st.markdown(annotated_report(text, []), unsafe_allow_html=True)
+            if rid == CUSTOM:
+                st.caption("Paste any report in the same format. Errors are left in place for the Critic to find.")
+                st.text_area("Report text", value=st.session_state.get("custom_text", SAMPLE_CUSTOM),
+                             height=260, key="custom_text", label_visibility="collapsed")
+            else:
+                st.markdown(annotated_report(text, []), unsafe_allow_html=True)
         with c2:
             st.subheader("How a run works")
             st.markdown("""
@@ -277,7 +311,7 @@ with tab_run:
         m[1].metric("Hours logged", f"{total:g} h", "complete" if abs(total - 24) < .01 else "incomplete",
                     delta_color="normal" if abs(total - 24) < .01 else "inverse")
         m[2].metric("Depth vs plan", (f"{dvp:+,} m" if dvp else "0 m") if dvp is not None else "n/a",
-                    "ahead" if (dvp or 0) > 0 else "behind" if (dvp or 0) < 0 else "on plan",
+                    None if dvp is None else "ahead" if dvp > 0 else "behind" if dvp < 0 else "on plan",
                     delta_color="normal" if (dvp or 0) >= 0 else "inverse")
         m[3].metric("ROP (m/h)", f"{rop.get('rop_m_per_h') or 0:g}", f"{rop.get('drilled_m', 0):,} m drilled",
                     delta_color="off")
@@ -286,7 +320,7 @@ with tab_run:
                     f"{(cost - budget) / budget * 100:+.1f}% budget" if cost and budget else None,
                     delta_color="inverse")
         verdict = v.get("critic_verdict") or ("skipped" if not st.session_state.critic else "-")
-        fails = sum(a["verdict"] == "FAIL" for a in attempts)
+        fails = sum(a["verdict"] == "FAIL" for a in attempts[:-1])   # FAILs that led to another attempt
         m[5].metric("Critic", verdict, f"{fails} retr{'y' if fails == 1 else 'ies'}",
                     delta_color="off")
 
@@ -294,10 +328,12 @@ with tab_run:
         with c1:
             st.subheader("Daily Drilling Report")
             st.caption("NPT lines are highlighted with category · hours · model confidence")
-            st.markdown(annotated_report(text, v.get("activities", [])), unsafe_allow_html=True)
+            st.markdown(annotated_report(text, v.get("activities") or [], v.get("parse_issues")),
+                        unsafe_allow_html=True)
             st.subheader("Where the 24 hours went")
             st.markdown(legend(["productive"] + [c for c in CAT_COLORS if c in npt]), unsafe_allow_html=True)
-            st.altair_chart(timeline_chart(v["activities"]), width="stretch")
+            if v.get("activities"):
+                st.altair_chart(timeline_chart(v["activities"]), width="stretch")
             if npt:
                 st.altair_chart(npt_bar(npt), width="stretch")
             else:
@@ -346,62 +382,77 @@ with tab_run:
                 st.markdown(f'<div class="stamp"><b>Approved</b> by the drilling engineer'
                             f'{": " + html.escape(v.get("engineer_comment", "")) if v.get("engineer_comment") else ""}'
                             f'<br>Computed · Sourced · Approved</div>', unsafe_allow_html=True)
-            with st.expander("Check against the answer key (synthetic data)"):
-                rows = [("Hours logged", 24.0, total),
-                        ("Total NPT (h)", k["total_npt"], v.get("total_npt", 0)),
-                        ("Depth vs plan (m)", k["depth_vs_plan_m"], dvp),
-                        ("ROP (m/h)", k["rop_m_per_h"], rop.get("rop_m_per_h"))]
-                rows += [(f"{c.replace('_', ' ')} (h)", k["npt_hours"].get(c, 0), npt.get(c, 0))
-                         for c in sorted(set(k["npt_hours"]) | set(npt))]
-                st.dataframe(pd.DataFrame([{"check": a, "expected": b, "agents": c,
-                                            "match": "✅" if c is not None and abs(float(b or 0) - float(c or 0)) < .06
-                                            else "❌"} for a, b, c in rows]),
-                             hide_index=True, width="stretch")
+            if k is None:
+                st.caption("Custom report: there is no answer key to compare against.")
+            else:
+                with st.expander("Check against the answer key (synthetic data)"):
+                    rows = [("Hours logged", 24.0, total),
+                            ("Total NPT (h)", k["total_npt"], v.get("total_npt", 0)),
+                            ("Depth vs plan (m)", k["depth_vs_plan_m"], dvp),
+                            ("ROP (m/h)", k["rop_m_per_h"], rop.get("rop_m_per_h"))]
+                    rows += [(f"{c.replace('_', ' ')} (h)", k["npt_hours"].get(c, 0), npt.get(c, 0))
+                             for c in sorted(set(k["npt_hours"]) | set(npt))]
+                    st.dataframe(pd.DataFrame([{"check": a, "expected": b, "agents": c,
+                                                "match": "✅" if c is not None and abs(float(b or 0) - float(c or 0)) < .06
+                                                else "❌"} for a, b, c in rows]),
+                                 hide_index=True, width="stretch")
 
 with tab_eval:
     st.subheader("Evaluation on all 15 reports")
-    st.caption("Every report is synthetic with planted events, so each has a known right answer.")
-    mpath = ROOT / "results" / "metrics.json"
-    if st.button("Re-run evaluation"):
+    st.caption("Every report is synthetic with planted events, so each has a known right answer. "
+               "Results are saved per model, so the table always says which model produced it.")
+    if st.button(f"Re-run evaluation with the active model ({llm.backend()})"):
         with st.spinner("Running 15 reports × each configuration…"):
             import evaluate
             evaluate.main()
-            memory.set_db(DATA / "incidents.sqlite")
-    if mpath.exists():
+    names = {"npt_hours_mae": "NPT hours error (MAE, h) ↓", "category_accuracy": "Category accuracy ↑",
+             "critic_catch_rate": "Critic catch rate ↑", "evidence_rate": "Evidence rate ↑",
+             "logs_adding_to_24h": "Logs adding to 24 h", "reports_exact_npt": "Reports with exact NPT",
+             "false_npt_lines": "False NPT lines ↓"}
+    found = False
+    for backend, title in [("ollama", "Local LLM through Ollama"), ("mock", "Mock keyword classifier (fallback)")]:
+        mpath = ROOT / "results" / f"metrics_{backend}.json"
+        if not mpath.exists():
+            continue
+        found = True
         res = json.loads(mpath.read_text())
+        st.markdown(f"#### {title}")
         st.caption(f"Model: **{res['meta']['model']}** · generated {res['meta']['generated']}")
-        names = {"npt_hours_mae": "NPT hours error (MAE, h) ↓", "category_accuracy": "Category accuracy ↑",
-                 "critic_catch_rate": "Critic catch rate ↑", "evidence_rate": "Evidence rate ↑",
-                 "logs_adding_to_24h": "Logs adding to 24 h", "reports_exact_npt": "Reports with exact NPT",
-                 "false_npt_lines": "False NPT lines ↓"}
-        rows = []
-        for run_name, mm in res["runs"].items():
-            rows.append({"Run": run_name, **{lab: ("n/a" if mm.get(key) is None else mm.get(key))
-                                             for key, lab in names.items()}})
+        rows = [{"Run": run_name, **{lab: ("n/a" if mm.get(key) is None else mm.get(key)) for key, lab in names.items()}}
+                for run_name, mm in res["runs"].items()]
         st.dataframe(pd.DataFrame(rows).astype(str), hide_index=True, width="stretch")
         if "note" in res["runs"].get("Single-prompt chatbot", {}):
-            st.info("Single-prompt chatbot baseline: " + res["runs"]["Single-prompt chatbot"]["note"])
+            st.caption("Single-prompt chatbot baseline: " + res["runs"]["Single-prompt chatbot"]["note"])
+        pr = ROOT / "results" / f"per_report_{backend}.csv"
+        if pr.exists():
+            with st.expander("Per-report results"):
+                st.dataframe(pd.read_csv(pr), hide_index=True, width="stretch")
+    if found:
         st.markdown("""
 - **NPT hours error**: mean of |predicted NPT − true NPT| per report
 - **Category accuracy**: planted NPT lines given the right category ÷ all planted NPT lines
 - **Critic catch rate**: reports with a planted error that the Critic failed on the first pass ÷ 2
 - **Evidence rate**: NPT claims whose cited source line really contains that text ÷ all NPT claims
+- The mock's keywords share a vocabulary with the synthetic reports, so its accuracy is optimistic
 """)
-        pr = ROOT / "results" / "per_report.csv"
-        if pr.exists():
-            with st.expander("Per-report results"):
-                st.dataframe(pd.read_csv(pr), hide_index=True, width="stretch")
     else:
         st.info("No results yet. Press **Re-run evaluation**.")
 
 with tab_mem:
     st.subheader("Long-term memory (SQLite)")
-    st.caption("Research reads past incidents. The Critic writes failed cases. The engineer's decisions are kept.")
+    st.caption("Research reads past incidents. The Critic writes failed cases. The engineer's decisions are kept. "
+               "The app works on a copy in runtime/, so the committed seed data never changes.")
+    if st.button("Reset memory to the seed data"):
+        memory.reset()
+        st.rerun()
     for name, title in [("incidents", "Past NPT incidents (cause → fix)"), ("failed_cases", "Failed cases from the Critic"),
                         ("engineer_feedback", "Engineer decisions")]:
         st.markdown(f"**{title}**")
         rows = memory.table(name)
-        st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch") if rows else st.caption("Empty")
+        if rows:
+            st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
+        else:
+            st.caption("Empty")
 
 with tab_arch:
     st.subheader("LangGraph architecture")
@@ -432,7 +483,7 @@ digraph G {
   executor -> tools [style=dotted color="#a78bfa" dir=both label="tool calls"];
   executor -> orch [style=dashed];
   orch -> critic [style=dashed color="#60a5fa" label="check"]; critic -> orch [label="verdict"];
-  orch -> executor [style=dashed color="#ef4444" fontcolor="#ef4444" label="FAIL & retries < 3"];
+  orch -> executor [style=dashed color="#ef4444" fontcolor="#ef4444" label="FAIL, fixable, retries < 3"];
   orch -> writer [style=dashed penwidth=2 color="#3b82f6" label="PASS / retries used"];
   writer -> human; human -> END [label="approve"];
   human -> orch [style=dashed color="#ef4444" fontcolor="#ef4444" label="reject + comment"];

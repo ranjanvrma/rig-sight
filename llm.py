@@ -119,8 +119,12 @@ def classify(text: str, codes: dict) -> tuple[str, float, str]:
 # ---------------- writing ----------------
 
 def write_summary(facts: str) -> str | None:
-    """LLM turns computed facts into a short paragraph. It may not add numbers. None in mock mode."""
-    if backend() != "ollama":
+    """LLM turns computed facts into a short paragraph. It may not add numbers. None in mock mode.
+
+    Off by default (RIG_LLM_SUMMARY=1 turns it on): in testing, qwen2.5:3b kept every number but swapped
+    which category they belonged to ("weather and equipment (3.5 h, 2 h respectively)"). The number guard
+    in report_writer cannot catch that, so the template summary is the safe default."""
+    if backend() != "ollama" or os.getenv("RIG_LLM_SUMMARY") != "1":
         return None
     prompt = (
         "You are a drilling engineer's assistant. Write a 3 to 4 sentence morning summary of this "

@@ -1,8 +1,26 @@
+# Python
 __pycache__/
 *.pyc
-checkpoints.db*
-results/eval_memory.sqlite
+.pytest_cache/
 .venv/
+venv/
+env/
+
+# secrets and local config
+.env
+*.env
+.streamlit/secrets.toml
+
+# runtime state written by the app (memory copy, LangGraph checkpoints)
+runtime/
+checkpoints.db*
+
+# editor / OS / Office lock files
 .claude/
+.vscode/
+.idea/
+Thumbs.db
+~$*
+
 # team notes: contain a PRN and a Canva edit link, keep them out of a public repo
 CA3_Reading_the_Rig_Project_Notes.pdf
