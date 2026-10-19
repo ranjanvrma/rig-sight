@@ -12,9 +12,8 @@ All data is synthetic. This is a classroom proof of concept, not a certified eng
 **Live demo:** [rig-sight.streamlit.app](https://rig-sight.streamlit.app/) (Streamlit Community Cloud, mock model;
 see [Deployment](#deployment))
 
-**Deliverables:** [submission/Rig_Sight_CA3_Presentation.pptx](submission/Rig_Sight_CA3_Presentation.pptx) ·
-[submission/Rig_Sight_CA3_Report.docx](submission/Rig_Sight_CA3_Report.docx) ·
-[architecture diagram](docs/figures/architecture_original.png) · [app screenshots](docs/figures/)
+**Submission:** everything is in [submission/](submission/): the PPT and the report (each also as PDF), the
+architecture diagram and a zip of the code. [App screenshots](docs/figures/) are in `docs/figures/`.
 
 ## Problem
 
