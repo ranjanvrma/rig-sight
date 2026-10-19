@@ -49,6 +49,21 @@ cap = st["Caption"]
 cap.font.size, cap.font.italic, cap.font.color.rgb = Pt(9.5), True, MUTED
 
 fig_no, tab_no = [0], [0]
+REPO_URL, DEMO_URL = "https://github.com/ranjanvrma/rig-sight", "https://rig-sight.streamlit.app/"
+
+
+def link(paragraph, url, text, size=11):
+    """Clickable hyperlink run (python-docx has no high-level API for this)."""
+    rid = paragraph.part.relate_to(url, "http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink",
+                                   is_external=True)
+    h = OxmlElement("w:hyperlink"); h.set(qn("r:id"), rid)
+    r = OxmlElement("w:r"); rpr = OxmlElement("w:rPr")
+    c = OxmlElement("w:color"); c.set(qn("w:val"), "0563C1"); rpr.append(c)
+    u = OxmlElement("w:u"); u.set(qn("w:val"), "single"); rpr.append(u)
+    sz = OxmlElement("w:sz"); sz.set(qn("w:val"), str(int(size * 2))); rpr.append(sz)
+    r.append(rpr)
+    t = OxmlElement("w:t"); t.text = text; r.append(t)
+    h.append(r); paragraph._p.append(h)
 
 
 def field(paragraph, instr):
@@ -161,8 +176,10 @@ P("", after=30)
 for line in ["TY B.Tech AI-ML, Division B", "Symbiosis Institute of Technology, Pune", "October 2026"]:
     P(line, align=WD_ALIGN_PARAGRAPH.CENTER, size=11.5, after=2)
 P("", after=40)
-P("Repository: github.com/ranjanvrma/rig-sight · Live demo: rig-sight.streamlit.app", align=WD_ALIGN_PARAGRAPH.CENTER,
-  size=10, color=MUTED)
+lp = P("Repository: ", align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, color=MUTED, after=2)
+link(lp, REPO_URL, REPO_URL, 10.5)
+lp = P("Live demo: ", align=WD_ALIGN_PARAGRAPH.CENTER, size=10.5, color=MUTED)
+link(lp, DEMO_URL, DEMO_URL, 10.5)
 P("All data in this project is synthetic. This is a classroom proof of concept, not a certified engineering "
   "or safety system.", align=WD_ALIGN_PARAGRAPH.CENTER, size=9.5, color=MUTED, italic=True)
 
@@ -655,7 +672,11 @@ for i, r in enumerate(refs, 1):
     p.add_run(r)
 
 H("Appendix A. How to run", 1)
-P("Online, without installing anything: https://rig-sight.streamlit.app/ (mock classifier). Locally:")
+lp = P("Source code: ")
+link(lp, REPO_URL, REPO_URL)
+lp = P("Online, without installing anything (mock classifier): ")
+link(lp, DEMO_URL, DEMO_URL)
+P("Locally:")
 code("""pip install -r requirements-dev.txt
 python data/generate_data.py        # optional: rebuild the dataset
 python -m pytest                    # automated tests

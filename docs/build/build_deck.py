@@ -29,6 +29,7 @@ N_TESTS = int(sys.argv[4]) if len(sys.argv) > 4 else 48
 BLACK, CREAM, ORANGE, WHITE, GREY = (RGBColor(0, 0, 0), RGBColor(0xFF, 0xFA, 0xE5), RGBColor(0xF6, 0x3B, 0x05),
                                      RGBColor(0xFF, 0xFF, 0xFF), RGBColor(0xB9, 0xB2, 0xA0))
 TITLE_FONT, BODY_FONT = "Anton", "Inter Light"
+REPO_URL, DEMO_URL = "https://github.com/ranjanvrma/rig-sight", "https://rig-sight.streamlit.app/"
 W_IN, H_IN = 13.333, 7.5
 PT_PER_IN = 72
 S = W_IN * PT_PER_IN / 1440          # PDF points -> slide points (0.6667)
@@ -80,6 +81,8 @@ def text(slide, x, y, w, h, paras, size=12, font=BODY_FONT, color=WHITE, align=P
             r.font.size = Pt(o.get("size", size))
             r.font.bold = o.get("bold", False)
             r.font.color.rgb = o.get("color", color)
+            if o.get("link"):
+                r.hyperlink.address = o["link"]
     return tb
 
 
@@ -210,9 +213,11 @@ text(s, rx, cap_y, rw, Inches(1.0), [
      ("the engineer rejected one mislabel (line 7, slip and cut), the graph re-ran: 8.0 h NPT, approved.", {})]],
      size=12)
 text(s, Inches(0.55), Inches(6.85), Inches(12.2), Inches(0.4), [
-    [("Try it: ", {"bold": True, "color": ORANGE}),
-     ("rig-sight.streamlit.app  (hosted on Streamlit Community Cloud, runs on the mock classifier; the real model "
-      "runs locally with Ollama)", {})]], size=12)
+    [("Code: ", {"bold": True, "color": ORANGE}),
+     ("github.com/ranjanvrma/rig-sight", {"link": REPO_URL, "color": CREAM}),
+     ("     Try it: ", {"bold": True, "color": ORANGE}),
+     ("rig-sight.streamlit.app", {"link": DEMO_URL, "color": CREAM}),
+     ("  (mock classifier online; the real model runs locally with Ollama)", {})]], size=12)
 s.notes_slide.notes_text_frame.text = (
     "Backup for the live demo. Left is the run: the Critic fails the first pass at 23.5 h and the retry recovers the "
     "missing half hour. Right is the final report after the engineer rejected one mislabel and approved.")
@@ -320,10 +325,33 @@ text(s, *pdf_box(67, 560, 525, 650), [
 
 # 18, 19 · thank you, sources
 image_slide(16, notes="Every number computed, every flag sourced, every report approved by a person. Questions.")
-image_slide(17, notes="All 11 sources. Source numbers match the small (Source N) tags on the slides.")
+s = image_slide(17, notes="All 11 sources. Source numbers match the small (Source N) tags on the slides. The code and "
+                          "the live demo links are at the bottom right.")
+text(s, Inches(8.4), Inches(5.55), Inches(4.4), Inches(0.5), ["CODE AND DEMO"], size=20, font=TITLE_FONT,
+     color=ORANGE, align=PP_ALIGN.RIGHT)
+text(s, Inches(7.4), Inches(6.1), Inches(5.4), Inches(0.8), [
+    [("GitHub: ", {"bold": True}), ("github.com/ranjanvrma/rig-sight", {"link": REPO_URL, "color": CREAM})],
+    [("Live demo: ", {"bold": True}), ("rig-sight.streamlit.app", {"link": DEMO_URL, "color": CREAM})]],
+    size=13, align=PP_ALIGN.RIGHT, spacing=2)
 
 prs.core_properties.title = "Reading the Rig - Agentic AI for Daily Drilling Reports (CA-3)"
 prs.core_properties.author = "Ranjan Verma and Rahul Narkhede"
 prs.core_properties.last_modified_by = "Ranjan Verma"
 prs.save(OUT)
+
+# hyperlinks take the theme's link colour, not the run colour: make it the deck's cream so links read on black
+import re
+import shutil
+import zipfile
+tmp = OUT.with_suffix(".tmp")
+with zipfile.ZipFile(OUT) as zin, zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zout:
+    for item in zin.infolist():
+        data = zin.read(item.filename)
+        if item.filename.startswith("ppt/theme/theme"):
+            xml = data.decode("utf-8")
+            xml = re.sub(r"<a:hlink>.*?</a:hlink>", '<a:hlink><a:srgbClr val="FFFAE5"/></a:hlink>', xml)
+            xml = re.sub(r"<a:folHlink>.*?</a:folHlink>", '<a:folHlink><a:srgbClr val="FFFAE5"/></a:folHlink>', xml)
+            data = xml.encode("utf-8")
+        zout.writestr(item, data)
+shutil.move(tmp, OUT)
 print("saved", OUT, len(prs.slides), "slides")
