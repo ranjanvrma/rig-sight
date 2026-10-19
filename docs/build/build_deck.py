@@ -131,20 +131,18 @@ NOTES = {
 for n in range(1, 8):
     image_slide(n, notes=NOTES[n])
 
-# 8 · architecture (redrawn from the final code)
+# 8 · architecture (the team's original draw.io diagram, as on the Canva deck)
 s = prs.slides.add_slide(BLANK)
-bg(s)
-img = Image.open(FIG / "architecture_dark.png")
-w = Inches(12.6)
+bg(s, WHITE)
+img = Image.open(FIG / "architecture_original.png")
+w = prs.slide_width
 h = int(w * img.height / img.width)
-s.shapes.add_picture(str(FIG / "architecture_dark.png"), int((prs.slide_width - w) / 2),
-                     int((prs.slide_height - h) / 2), w, h)
+s.shapes.add_picture(str(FIG / "architecture_original.png"), 0, int((prs.slide_height - h) / 2), w, h)
 s.notes_slide.notes_text_frame.text = (
-    "Hub and spoke. The Orchestrator in the middle is plain Python: route() reads the shared DDRState and sends "
-    "work to the Planner, Research, Executor and Critic. The Executor calls six Python tools through a ToolNode; "
-    "only classify_activities uses the language model. A Critic FAIL with a fixable problem goes back to the "
-    "Executor with structured fix hints, at most 3 times. Then report_writer drafts, and human_review pauses the "
-    "graph with interrupt() until the engineer approves or rejects. recursion_limit is 50; worst case is 32 steps.")
+    "Hub and spoke. Orchestrator in the middle, four agents around it, ToolNode for exact maths, incident memory and "
+    "reference data at the bottom, engineer review as an interrupt before the final report. Follow arrows 1 to 15. "
+    "If asked, the final code differs in small ways: the Planner is rule based, recursion_limit is 50 (worst case "
+    "32 steps), the model is qwen2.5:3b, and the Critic also checks gaps, overlaps and unparseable lines.")
 
 # 9 · edge types (accurate as is)
 image_slide(9, notes="Normal edges are fixed add_edge calls. Conditional edges come from route() or tools_condition. "

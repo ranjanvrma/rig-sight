@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from docx import Document
-from docx.enum.section import WD_SECTION
+from docx.enum.section import WD_ORIENT, WD_SECTION
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_BREAK
 from docx.oxml import OxmlElement
@@ -302,7 +302,6 @@ P("The design is hub and spoke (Figure 1). The Orchestrator sits in the middle, 
   "which agent works next. Every agent hands back to the Orchestrator; agents never call each other. Reference data, "
   "incident memory and the checkpointer live outside the graph. The Streamlit UI starts a run, streams every node's "
   "update and resumes the graph when the engineer decides.")
-F(FIG / "architecture_light.png", "Architecture of the final implementation (drawn from the code in graph.py)")
 P("A normal run, step by step:", bold_lead=None)
 B(["Streamlit calls app.stream(initial_state, thread_id). ingest_report reads the file and parses the header.",
    "The Orchestrator sends the state to the Planner, which writes the task list.",
@@ -314,6 +313,24 @@ B(["Streamlit calls app.stream(initial_state, thread_id). ingest_report reads th
    "report_writer drafts the Daily Insight Report. human_review calls interrupt() and the graph stops.",
    "The engineer approves (END) or rejects with a comment; a rejection clears the work and the Executor re-runs "
    "with the engineer's line overrides."], style="List Number")
+
+P("Figure 1, on the next page, shows the full architecture and the numbered data flow.")
+land = doc.add_section(WD_SECTION.NEW_PAGE)
+land.orientation = WD_ORIENT.LANDSCAPE
+land.page_width, land.page_height = Cm(29.7), Cm(21.0)
+land.left_margin = land.right_margin = Cm(1.5)
+land.top_margin = land.bottom_margin = Cm(1.5)
+F(FIG / "architecture_original.png", "Architecture of the system (the team's design diagram)", 26.5)
+P("The diagram is the team's original design. The final code follows it, with these differences: the Planner is "
+  "rule based rather than LLM based; recursion_limit is 50, not 25 (the worst case needs 32 steps); the local model "
+  "is qwen2.5:3b, because llama3.1:8b does not fit in 4 GB of GPU memory; classification runs as one "
+  "classify_activities tool over all lines; the chart is an Altair timeline plus NPT by category; and the Critic "
+  "also checks gaps, overlaps, unparseable lines and the header (Section 11).", italic=True)
+port = doc.add_section(WD_SECTION.NEW_PAGE)
+port.orientation = WD_ORIENT.PORTRAIT
+port.page_width, port.page_height = Cm(21.0), Cm(29.7)
+port.left_margin = port.right_margin = Cm(2.3)
+port.top_margin = port.bottom_margin = Cm(2.2)
 
 # ---------------- 8 agents ----------------
 H("7. Agent roles and orchestration")
