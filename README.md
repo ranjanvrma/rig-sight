@@ -170,7 +170,7 @@ The server sends security headers (a Content-Security-Policy, `nosniff`, no fram
 python -m pytest
 ```
 
-57 tests, all passing: tool parsing and validation (malformed lines, impossible and reversed times, missing and
+58 tests, all passing: tool parsing and validation (malformed lines, impossible and reversed times, missing and
 invalid reference files), all 15 reports against the answer key, the Critic catching both planted errors, the
 retry, failed cases in memory, the no-Critic ablation, approve and reject-with-override, a missing header, an
 empty log, an unknown well, the worst-case retry limit, honest mock reporting, the LLM-summary number guard,
