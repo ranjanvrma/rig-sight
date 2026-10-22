@@ -180,11 +180,6 @@ def test_llm_summary_with_only_computed_numbers_is_kept(monkeypatch, run):
     assert "lost 12 hours" in s["draft_report"] and f"summary written by: {llm.model_name()}" in s["draft_report"]
 
 
-def test_ollama_unavailable_falls_back_to_mock():
-    llm._status_cache.clear()
-    assert llm.set_backend("ollama") == "mock"
-
-
 def test_groq_needs_a_key(monkeypatch):
     monkeypatch.delenv("GROQ_API_KEY", raising=False)
     llm._status_cache.clear()
@@ -193,13 +188,19 @@ def test_groq_needs_a_key(monkeypatch):
 
 def test_groq_backend_labels_lines_and_falls_back(monkeypatch, run):
     monkeypatch.setattr(llm, "groq_status", lambda: (True, "Groq · test"))
-    monkeypatch.setattr(llm, "_groq", lambda prompt, json_mode: '{"category": "tool_failure", "confidence": 0.9}')
-    assert llm.set_backend("groq") == "groq"
-    cat, conf, by = llm.classify("MWD tool stopped sending data", {})
-    assert (cat, conf, by) == ("tool_failure", 0.9, f"{llm.GROQ_MODEL} (Groq)")
+    calls = []
 
-    def down(prompt, json_mode):
+    def fake(prompt, json_mode=False):                 # labels line 1, leaves line 2 out
+        calls.append(prompt)
+        return '{"labels": [{"id": 1, "category": "tool_failure", "confidence": 0.9}]}'
+    monkeypatch.setattr(llm, "ask", fake)
+    assert llm.set_backend("groq") == "groq"
+    out = llm.classify_many(["MWD tool stopped sending data", "Drilled ahead"], {})
+    assert len(calls) == 1                             # one call for the whole report
+    assert out[0] == ("tool_failure", 0.9, f"{llm.GROQ_MODEL} (Groq)") and out[1][2] == "mock"
+
+    def down(prompt, json_mode=False):
         raise OSError("rate limited")
-    monkeypatch.setattr(llm, "_groq", down)            # a failed call never stops a run: that line uses the mock
+    monkeypatch.setattr(llm, "ask", down)              # a failed call never stops a run: those lines use the mock
     assert llm.classify("MWD tool stopped sending data", {"tool_failure": ["mwd"]})[2] == "mock"
     llm.set_backend("mock")

@@ -62,8 +62,7 @@
       <span class="dot" id="modelDot" aria-hidden="true"></span>
       <span class="sr-only">Language model</span>
       <select id="modelSelect">
-        <option value="ollama">Ollama · qwen2.5:3b</option>
-        <option value="groq">Groq · llama-3.1-8b</option>
+        <option value="groq">Groq · gpt-oss-20b</option>
         <option value="mock">Mock (keyword rules)</option>
       </select>
     </label>
@@ -190,7 +189,7 @@
                  alt="Architecture diagram: the web app starts the graph; the Orchestrator routes to the Planner, Research, Executor with its ToolNode, and the Critic; the report writer drafts and the engineer approves or rejects.">
           </picture>
         </a>
-        <figcaption>The team's design diagram, updated to match the code. The online demo labels lines with a free hosted model (Groq) instead of Ollama.</figcaption>
+        <figcaption>The team's design diagram, updated to match the code.</figcaption>
       </figure>
       <section class="tile span-4"><h2 class="tile-label">Orchestrator</h2><p>Plain Python <code>route()</code> reads the shared state and picks the next agent. No model, fully predictable.</p></section>
       <section class="tile span-4"><h2 class="tile-label">Planner and Research</h2><p>Plan the work for this report, then pull the well plan, budget, NPT codes and similar past incidents.</p></section>

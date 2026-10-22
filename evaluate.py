@@ -2,8 +2,8 @@
 
 Three runs on the same reports and the same model:
   1. full graph (with Critic)   2. graph without Critic   3. single-prompt chatbot baseline
-Run: python evaluate.py            (RIG_LLM=mock|ollama|auto, default auto)
-Writes results/metrics_<backend>.json and results/per_report_<backend>.csv (backend = ollama or mock)
+Run: python evaluate.py            (RIG_LLM=mock|auto, default auto: Groq if GROQ_API_KEY is set)
+Writes results/metrics_<backend>.json and results/per_report_<backend>.csv (backend = groq or mock)
 """
 import csv
 import os
@@ -51,7 +51,8 @@ def from_graph(state: dict) -> dict:
             "line_labels": {a["source_line"]: a["category"] for a in acts},
             "npt_claims": [(a["source_line"], a["text"]) for a in acts if a["category"] != "productive"],
             "first_verdict": (state.get("attempts") or [{}])[0].get("verdict"),
-            "retries": state.get("retry_count", 0), "warnings": len(state.get("critic_warnings", []))}
+            "retries": state.get("retry_count", 0), "warnings": len(state.get("critic_warnings", [])),
+            "mock_lines": sum(a.get("labelled_by") == "mock" for a in acts)}
 
 
 def from_baseline(out: dict, text: str) -> dict:
@@ -100,13 +101,14 @@ def main():
             p = from_graph(state)
             r = {"run": name, "report_id": rid, **score(p, key, state["report_text"]),
                  "pred_npt": p["total_npt"], "true_npt": key["total_npt"], "pred_hours": p["total_hours"],
-                 "first_verdict": p["first_verdict"], "retries": p["retries"], "low_conf_flags": p["warnings"]}
+                 "first_verdict": p["first_verdict"], "retries": p["retries"], "low_conf_flags": p["warnings"],
+                 "mock_lines": p["mock_lines"]}
             rows.append(r)
         runs[name] = aggregate(rows, keys, use_critic) | {"seconds": round(time.time() - t0, 1)}
         per_report += rows
 
     name = "Single-prompt chatbot"
-    if backend == "ollama":
+    if backend != "mock":
         # the chatbot's free-form answers vary from run to run, so run it several times and report the spread
         repeats = int(os.getenv("RIG_BASELINE_REPEATS", "3"))
         per_rep, t0 = [], time.time()
@@ -133,7 +135,7 @@ def main():
             "note": f"mean of {repeats} runs; '/' separates the runs",
         }
     else:
-        runs[name] = {"note": "needs a real LLM (Ollama or Groq); a keyword mock cannot stand in for a chatbot"}
+        runs[name] = {"note": "needs a real LLM (Groq); a keyword mock cannot stand in for a chatbot"}
 
     meta = {"backend": backend, "model": llm.model_name() if backend != "mock" else "mock keyword classifier",
             "reports": len(keys), "generated": time.strftime("%Y-%m-%d %H:%M")}

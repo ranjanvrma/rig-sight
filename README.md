@@ -85,15 +85,15 @@ Hub and spoke: every agent hands back to the Orchestrator, and all of them read 
 Reference data, the SQLite incident memory and the LangGraph checkpointer sit outside the graph. The web app's
 **Architecture** page shows the same graph.
 
-This is the team's design diagram, updated to match the final code (rule-based Planner, `qwen2.5:3b`,
-`recursion_limit` 50, the web app as the front end). Two details are simplified in the drawing: classification runs
+This is the team's design diagram, updated to match the final code (rule-based Planner, `recursion_limit` 50,
+the web app as the front end; the model box now reads Groq instead of the original local model). Two details are simplified in the drawing: classification runs
 as one `classify_activities` tool over all lines, and the Critic also checks gaps, overlaps, unparseable lines and
 the header.
 
 ## Technology
 
 Python · LangGraph 1.2 (StateGraph, ToolNode, `interrupt()`, SqliteSaver checkpointer) · LangChain Core 1.6 ·
-Ollama with `qwen2.5:3b` (local, free), Groq `llama-3.1-8b-instant` (hosted, free tier) or a mock classifier · FastAPI + plain HTML/CSS/JavaScript · SQLite · pytest.
+Groq with `openai/gpt-oss-20b` (hosted, free tier) or a mock classifier · FastAPI + plain HTML/CSS/JavaScript · SQLite · pytest.
 
 "The model reads, Python counts": the language model only labels log lines. Every number is computed by a tool,
 so the Critic can check it exactly.
@@ -105,11 +105,11 @@ api.py                 FastAPI server: API + the web pages
 web/                   the frontend (index.html, styles.css, app.js, images); no build step
 graph.py               DDRState, the eight nodes, route(), graph build, human-in-the-loop
 tools.py               Executor tools (ToolNode) and Research lookups; all arithmetic
-llm.py                 the only place a model is called: Ollama, Groq, mock fallback, chatbot baseline
+llm.py                 the only place a model is called: Groq, mock fallback, chatbot baseline
 memory.py              SQLite incident memory, failed cases, engineer feedback
 evaluate.py            scores the 15 reports: with Critic / without Critic / single-prompt chatbot
 data/                  generate_data.py, reports/, answer_key.json, reference files, incidents.sqlite (seed)
-results/               metrics_<backend>.json and per_report_<backend>.csv (ollama and mock)
+results/               metrics_<backend>.json and per_report_<backend>.csv (groq and mock)
 tests/                 pytest suite (tools, graph, dataset, web API)
 submission/            final PPT, report and repository-link DOCX
 runtime/               created on first run: working copy of memory + checkpoints (git-ignored)
@@ -139,7 +139,7 @@ python -m uvicorn api:app --port 8000
 Open http://127.0.0.1:8000 (online: https://rig-sight.onrender.com/). A small FastAPI server (`api.py`) runs the LangGraph agents and streams every agent
 step to the page in `web/` (plain HTML, CSS and JavaScript, no build step): report picker and custom reports, live
 agent pipeline, KPIs, annotated time log, 24-hour timeline, Critic checks, insight report, engineer approve /
-reject, evaluation and memory. The model selector in the top bar switches between Ollama, Groq and the mock; a model the server cannot reach is greyed out.
+reject, evaluation and memory. The model selector in the top bar switches between Groq and the mock; without a working key Groq is greyed out and the reason is shown.
 
 Pages are real URLs (`/`, `/evaluation`, `/memory`, `/architecture`, plus a 404 page), rendered on the server with
 their own title, description, canonical URL, Open Graph tags and structured data; `/robots.txt` and `/sitemap.xml`
@@ -159,7 +159,7 @@ The server sends security headers (a Content-Security-Policy, `nosniff`, no fram
 1. **W-01 · Day 10**: clean day, 0 h NPT
 2. **W-02 · Day 10**: tool failure, 12 h, MWD fix pulled from memory
 3. **W-02 · Day 14**: the first pass adds to 23.5 h; the Critic names the 20:30-21:00 gap; the retry recovers it
-   from REMARKS. With Ollama, the model also labels line 7 (slip and cut, planned work) as NPT: reject with
+   from REMARKS. The model may also label line 7 (slip and cut, planned work) as NPT: reject with
    `line 7 is planned, not NPT`, the graph re-runs to the correct 8.0 h, then approve
 4. **Custom report**: paste any report. The sample has an invalid time (`12:00-2:00`), which is marked as a
    source error and left unrepaired
@@ -174,7 +174,7 @@ python -m pytest
 invalid reference files), all 15 reports against the answer key, the Critic catching both planted errors, the
 retry, failed cases in memory, the no-Critic ablation, approve and reject-with-override, a missing header, an
 empty log, an unknown well, the worst-case retry limit, honest mock reporting, the LLM-summary number guard,
-the Ollama fallback, the dataset generator, and the web API (streaming runs, review, pages, SEO files, headers, input limits, rate limit). Tests use the mock and a
+the Groq fallback (one call per report; missing key, failed call), the dataset generator, and the web API (streaming runs, review, pages, SEO files, headers, input limits, rate limit). Tests use the mock and a
 temporary database, so they never touch a running model or the committed data.
 
 ```bash
@@ -182,24 +182,24 @@ python evaluate.py
 ```
 
 Runs the same 15 reports with the active model through three configurations and writes
-`results/metrics_<backend>.json`. Results with `qwen2.5:3b` (19 Oct 2026):
+`results/metrics_<backend>.json`. Results with Groq `openai/gpt-oss-20b` (23 Oct 2026):
 
 | Run | NPT error / report | Category accuracy | Critic catch | Evidence | Logs = 24 h | Exact NPT |
 |---|---|---|---|---|---|---|
-| **Graph with Critic** | **0.47 h** | **100%** | **2/2** | **100%** | **15/15** | **13/15** |
-| Graph without Critic | 0.43 h | 96.6% | n/a | 100% | 13/15 | 13/15 |
-| Single-prompt chatbot | 3.83 h | 75.9% | n/a | 95.7% | 1/15 | 4/15 |
+| **Graph with Critic** | **0.07 h** | **100%** | **2/2** | **100%** | **15/15** | **14/15** |
+| Graph without Critic | 0.77 h | 89.7% | n/a | 100% | 13/15 | 11/15 |
+| Single-prompt chatbot | 0.57 h | 94.3% | n/a | 100% | 13/15 | 13/15 |
 
-- Same model, about 8× less error. The chatbot reported totals between 11 h and 126 h for 24-hour logs.
+- Same model, about 8× less error than the chatbot, and every log adds up to 24 h.
 - The Critic caught both planted errors before any human saw them. Without it, W-02 D14 shows 23.5 h and
-  W-03 D13 shows 24.5 h.
-- "Without Critic" has a slightly lower error only because two mistakes cancel on W-02 D14 (a missing 0.5 h
-  offsets part of a 3 h mislabel). Look at the 24 h column and category accuracy too.
-- The two remaining errors are planned work the model labels NPT with high confidence: "slipped and cut drill
-  line" (3 h) and "waited on cement" (4 h). Confidence is ≥ 0.9, so the 0.7 floor cannot flag them; the engineer
-  fixes each with one reject comment. This is why the human stays in the loop.
-- The graph's results were identical on three separate runs (temperature 0). The chatbot's mean error was
-  4.43 h, 3.77 h and 3.83 h on three separate runs; the table shows the latest.
+  W-03 D13 shows 24.5 h, and the error rises from 0.07 h to 0.77 h.
+- The one remaining miss is W-02 D11: the model counts a 1-hour "flow checked, well static" after a kick as well
+  control; the answer key calls it productive. The engineer fixes it with one reject comment.
+- Model output varies between runs, even at temperature 0. The chatbot was run three times (mean error 0.63 h,
+  0.63 h and 0.43 h; the table shows the mean). On W-02 D14 the model sometimes labels the planned "slipped and cut
+  drill line" (3 h) as NPT; rejecting with `line 7 is planned, not NPT` corrects it to 8.0 h.
+- Both prompts use the same NPT definition, including "time spent recovering from a failure is NPT". Without
+  that sentence the model called the trips out and back in to fix a failure productive (error 1.83 h).
 - Mock fallback (`RIG_LLM=mock`): 0.27 h error, 2/2 catches, 14/15 exact. That is optimistic, because the mock's
   keywords and the synthetic reports share a vocabulary.
 
@@ -218,25 +218,26 @@ not depend on the agents.
 The app never writes to `data/`: it copies the seed memory to `runtime/memory.sqlite` on first use. The
 **Memory** page has a reset button.
 
-## Models: Ollama, Groq and the mock fallback
+## Models: Groq and the mock fallback
 
-```bash
-ollama pull qwen2.5:3b
+Get a free key at [console.groq.com/keys](https://console.groq.com/keys) (no card). Locally, put it in a `.env`
+file in the project folder (git-ignored):
+
+```
+GROQ_API_KEY=gsk_...
 ```
 
-With `RIG_LLM=auto` (the default) the app and `evaluate.py` pick, in order: **Ollama** if it is running with the
-model pulled (local, free), then **Groq** if `GROQ_API_KEY` is set (a free hosted model, used online because a free
-server cannot run Ollama), then the **mock** keyword classifier built from `npt_codes.json`. The top bar, every
-activity's `labelled_by` field and every report say which one labelled the lines. If a Groq call fails (for example
-the free tier's per-minute limit), that line falls back to the mock and is labelled `mock`. Settings:
+With `RIG_LLM=auto` (the default) the app and `evaluate.py` use **Groq** when the key works, else the **mock**
+keyword classifier built from `npt_codes.json`. The model labels all lines of a report in one request, which keeps
+the free tier's per-minute limits out of the way. The top bar, every activity's `labelled_by` field and every report
+say which one labelled the lines; if a Groq call fails, those lines fall back to the mock and say `mock`. Settings:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `RIG_LLM` | `auto` | `auto`, `ollama`, `groq` or `mock` |
-| `RIG_MODEL` | `qwen2.5:3b` | any Ollama model |
-| `OLLAMA_URL` | `http://127.0.0.1:11434` | Ollama server |
-| `GROQ_API_KEY` | not set | free key from [console.groq.com](https://console.groq.com/keys); never sent to the browser |
-| `RIG_GROQ_MODEL` | `llama-3.1-8b-instant` | any model Groq serves |
+| `RIG_LLM` | `auto` | `auto` or `mock` |
+| `GROQ_API_KEY` | not set | free key from Groq; read on the server only, never sent to the browser |
+| `RIG_GROQ_MODEL` | `openai/gpt-oss-20b` | any chat model Groq serves |
+| `RIG_GROQ_WAIT` | `6` | seconds to wait out a Groq rate limit before falling back |
 | `RIG_LLM_SUMMARY` | off | `1` lets the model rephrase the summary |
 | `RIG_MEMORY_DB` | `runtime/memory.sqlite` | working memory database |
 
@@ -247,7 +248,8 @@ A guard rejects summaries with invented numbers, but it cannot catch swapped one
 ## Limitations
 
 - Synthetic data: 15 reports, three wells, one report format, six NPT categories
-- The 3B model labels some planned work as NPT with high confidence, so confidence alone is not a safe filter
+- The model sometimes labels planned work as NPT with high confidence, so confidence alone is not a safe filter
+- The online model needs a free Groq key and an internet connection; its free tier has per-minute and per-day limits
 - The parser expects `HH:MM-HH:MM` entries; other formats are reported as errors, not understood
 - Overlap trimming guesses which line is wrong; it is disclosed for the rig crew to confirm
 - Engineer overrides apply to that run; they are stored but not yet learned from
@@ -272,10 +274,8 @@ The app is deployed on **Render** (free web service) from this repository's `mai
 | Updates | redeploys on every push to `main` |
 | Sleeps | after about 15 minutes without visitors; the next visit takes about a minute |
 
-Free hosts cannot run Ollama (the free plan has 512 MB of memory), so the online app labels lines with Groq's
-free `llama-3.1-8b-instant`; without a key it falls back to the mock. `qwen2.5:3b` runs locally.
+The model runs at Groq, not on the server, so the free plan (512 MB of memory) is enough. Without a key the app
+falls back to the mock.
 Memory and checkpoints live in `runtime/` on the server: they are temporary (wiped when the app restarts, sleeps or
-redeploys) and shared by everyone using it. The Evaluation page shows the committed `qwen2.5:3b` and mock results
-from `results/`. Locally with Ollama, W-02 Day 14 gives 11.0 h first, and rejecting with `line 7 is planned, not
-NPT` corrects it to 8.0 h; the hosted model may label lines differently, and the engineer review corrects it the
-same way.
+redeploys) and shared by everyone using it. The Evaluation page shows the committed Groq and mock results
+from `results/`.

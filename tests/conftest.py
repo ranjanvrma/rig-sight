@@ -1,5 +1,5 @@
 """Tests run on the mock classifier with a throwaway memory database, so they are fast,
-deterministic and never touch the committed seed data or a running Ollama."""
+deterministic and never touch the committed seed data or the Groq API."""
 import os
 import shutil
 import sys
@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 os.environ["RIG_LLM"] = "mock"
-os.environ["OLLAMA_URL"] = "http://127.0.0.1:9"     # nothing listens here
+os.environ["GROQ_API_KEY"] = ""                      # tests never call Groq, even with a local .env
 warnings.filterwarnings("ignore", message=".*Pydantic V1.*")
 
 import pytest  # noqa: E402

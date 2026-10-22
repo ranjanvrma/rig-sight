@@ -70,7 +70,7 @@ def test_status_memory_metrics(client):
     assert len(client.get("/api/memory").json()["incidents"]) == 9
     assert client.post("/api/memory/reset").status_code == 200
     m = client.get("/api/metrics").json()
-    assert m["ollama"]["runs"]["Graph with Critic"]["critic_catch_rate"] == 1.0
+    assert m["groq"]["runs"]["Graph with Critic"]["critic_catch_rate"] == 1.0 and "ollama" not in m
 
 
 def test_pages_have_their_own_seo_metadata(client):

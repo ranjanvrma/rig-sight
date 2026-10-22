@@ -195,7 +195,7 @@ class ReviewIn(BaseModel):
 
 
 class ModelIn(BaseModel):
-    name: Literal["ollama", "groq", "mock"]
+    name: Literal["groq", "mock"]
 
 
 @app.get("/api/reports")
@@ -206,11 +206,9 @@ def reports():
 
 @app.get("/api/status")
 def status():
-    ok, msg = llm.ollama_status()
-    gok, gmsg = llm.groq_status()
+    ok, msg = llm.groq_status()
     return {"backend": llm.backend(), "model": llm.model_name() if llm.backend() != "mock" else "mock keyword classifier",
-            "ollama_ok": ok, "ollama_message": msg, "groq_ok": gok, "groq_message": gmsg,
-            "ollama_model": llm.MODEL, "groq_model": llm.GROQ_MODEL}
+            "groq_ok": ok, "groq_message": msg, "groq_model": llm.GROQ_MODEL}
 
 
 @app.post("/api/model")
@@ -254,7 +252,7 @@ def run_state(thread: str):
 @app.get("/api/metrics")
 def metrics():
     out = {}
-    for b in ("ollama", "mock"):
+    for b in ("groq", "mock"):
         f = ROOT / "results" / f"metrics_{b}.json"
         if f.exists():
             out[b] = json.loads(f.read_text())

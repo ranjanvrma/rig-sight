@@ -165,14 +165,13 @@ def parse_time_log(report_text: str, fix_hints: list[dict]) -> str:
 def classify_activities(activities: list[dict], overrides: dict) -> str:
     """Label every activity as productive or an NPT category with a confidence score.
     The LLM (or the mock) reads the text; engineer overrides (by source line) win."""
-    codes = npt_codes()
+    codes, overrides = npt_codes(), overrides or {}
+    todo = [a for a in activities if str(a["source_line"]) not in overrides]
+    labels = iter(llm.classify_many([a["text"] for a in todo], codes))     # one model call for the whole report
     out = []
     for a in activities:
-        o = (overrides or {}).get(str(a["source_line"]))
-        if o:
-            cat, conf, by = o, 1.0, "engineer"
-        else:
-            cat, conf, by = llm.classify(a["text"], codes)
+        o = overrides.get(str(a["source_line"]))
+        cat, conf, by = (o, 1.0, "engineer") if o else next(labels)
         out.append({**a, "category": cat, "confidence": round(conf, 2), "labelled_by": by})
     return json.dumps(out)
 

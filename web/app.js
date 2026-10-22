@@ -111,23 +111,21 @@ document.addEventListener("click", (e) => {
 window.addEventListener("popstate", () => route(location.pathname, false));
 
 // ---------------- model ----------------
-// Ollama runs on a laptop; Groq is a free hosted model (what the online demo uses); mock is keyword rules.
+// Groq is a free hosted model; mock is keyword rules (used when the server has no Groq key).
 async function loadStatus() {
   try {
     const s = await getJSON("/api/status");
-    const sel = $("#modelSelect"), opt = (v) => sel.querySelector(`option[value="${v}"]`);
-    opt("ollama").disabled = !s.ollama_ok;
-    opt("ollama").textContent = `Ollama · ${s.ollama_model}` + (s.ollama_ok ? "" : " (local only)");
-    opt("groq").disabled = !s.groq_ok;
-    opt("groq").textContent = `Groq · ${s.groq_model}` + (s.groq_ok ? "" : " (no key)");
+    const sel = $("#modelSelect"), groq = sel.querySelector('option[value="groq"]');
+    groq.disabled = !s.groq_ok;
+    groq.textContent = `Groq · ${s.groq_model}` + (s.groq_ok ? "" : " (unavailable)");
+    sel.title = s.groq_ok ? "" : s.groq_message;
     sel.value = s.backend;
-    $("#modelDot").className = "dot " + (s.backend === "mock" ? "warn" : "ok");
+    $("#modelDot").className = "dot " + (s.backend === "groq" ? "ok" : "warn");
     const hint = $("#modelHint");
-    hint.className = "hint" + (s.backend === "mock" && !s.ollama_ok && !s.groq_ok ? " warn" : "");
-    hint.textContent = s.backend === "ollama" ? `Lines are labelled by ${s.model}, running on this machine.`
-      : s.backend === "groq" ? `Lines are labelled by ${s.model}, a free hosted model.`
-      : s.ollama_ok || s.groq_ok ? "Mock keyword rules: instant, no model."
-      : "No model on this server, so lines are labelled by keyword rules (mock).";
+    hint.className = "hint" + (s.groq_ok ? "" : " warn");
+    hint.textContent = s.backend === "groq" ? `Lines are labelled by ${s.model}, a free hosted model.`
+      : s.groq_ok ? "Mock keyword rules: instant, no model."
+      : `${s.groq_message}, so lines are labelled by keyword rules (mock).`;
   } catch { $("#modelHint").textContent = "Model status unavailable."; }
 }
 $("#modelSelect").addEventListener("change", async (e) => {
@@ -402,8 +400,8 @@ async function loadEval() {
   g.innerHTML = `<div class="tile span-4 skeleton skel-tile"></div><div class="tile span-4 skeleton skel-tile"></div><div class="tile span-4 skeleton skel-tile"></div><div class="tile span-12 skeleton" style="min-height:240px"></div>`;
   let m;
   try { m = await getJSON("/api/metrics"); banner(null); } catch (e) { g.innerHTML = ""; banner(e.message, loadEval); return; }
-  const o = m.ollama?.runs;
-  if (!o) { g.innerHTML = `<div class="tile span-12"><p class="empty-state">No evaluation results yet. Run <code>python evaluate.py</code> with Ollama.</p></div>`; return; }
+  const o = m.groq?.runs;
+  if (!o) { g.innerHTML = `<div class="tile span-12"><p class="empty-state">No evaluation results yet. Run <code>python evaluate.py</code> with a Groq key.</p></div>`; return; }
   const G = o["Graph with Critic"], N = o["Graph without Critic"], C = o["Single-prompt chatbot"];
   const bars = [["Graph with Critic", G.npt_hours_mae, "var(--accent)"], ["Graph without Critic", N.npt_hours_mae, "color-mix(in srgb, var(--accent) 50%, var(--muted))"], ["Single-prompt chatbot", C.npt_hours_mae, "var(--muted)"]];
   const max = Math.max(...bars.map((b) => b[1])), W = 760;
@@ -416,12 +414,12 @@ async function loadEval() {
     r.npt_hours_mae == null ? `<tr><td>${esc(n)}</td><td colspan="6" class="muted">${esc(r.note || "Not run")}</td></tr>` :
     `<tr><td>${esc(n)}</td><td class="${n === "Graph with Critic" ? "hl" : ""}">${r.npt_hours_mae.toFixed(2)} h</td><td>${(r.category_accuracy * 100).toFixed(1)}%</td><td>${r.critic_catch_rate == null ? "n/a" : Math.round(r.critic_catch_rate * 2) + " / 2"}</td><td>${(r.evidence_rate * 100).toFixed(0)}%</td><td>${esc(first(r.logs_adding_to_24h))}</td><td>${esc(first(r.reports_exact_npt))}</td></tr>`).join("")}</tbody></table>`;
   g.innerHTML = `
-    <section class="tile kpi accent span-4"><h2 class="tile-label">Our graph · NPT error per report</h2><div class="stat-big accent">${G.npt_hours_mae.toFixed(2)} h</div><div class="kpi-sub">${esc(m.ollama.meta.model)}, ${m.ollama.meta.reports} reports</div></section>
+    <section class="tile kpi accent span-4"><h2 class="tile-label">Our graph · NPT error per report</h2><div class="stat-big accent">${G.npt_hours_mae.toFixed(2)} h</div><div class="kpi-sub">${esc(m.groq.meta.model)}, ${m.groq.meta.reports} reports</div></section>
     <section class="tile kpi span-4"><h2 class="tile-label">Single-prompt chatbot · same model</h2><div class="stat-big">${C.npt_hours_mae.toFixed(2)} h</div><div class="kpi-sub">About ${Math.round(C.npt_hours_mae / G.npt_hours_mae)}× more error</div></section>
     <section class="tile kpi span-4"><h2 class="tile-label">Planted errors caught by the Critic</h2><div class="stat-big">${Math.round(G.critic_catch_rate * 2)} / 2</div><div class="kpi-sub">Before any human saw them</div></section>
     <section class="tile span-7"><h2 class="tile-label">Mean NPT hours error · lower is better</h2><div class="chart">${svg}</div></section>
-    <section class="tile span-5"><h2 class="tile-label">How to read it</h2><p>“Without Critic” looks slightly better only because two mistakes cancel on W-02 Day 14. Only ${esc(N.logs_adding_to_24h)} of its logs add up to 24 h. The chatbot's logs add up to 24 h in ${esc(first(C.logs_adding_to_24h))}.</p></section>
-    <section class="tile span-12"><h2 class="tile-label">${esc(m.ollama.meta.model)} · generated ${esc(m.ollama.meta.generated)}</h2><div class="scroll">${table(o)}</div></section>
+    <section class="tile span-5"><h2 class="tile-label">How to read it</h2><p>Same model, same 15 reports. Without the Critic the error rises to ${N.npt_hours_mae.toFixed(2)} h and only ${esc(N.logs_adding_to_24h)} logs add up to 24 h. The chatbot's logs add up to 24 h in ${esc(first(C.logs_adding_to_24h))}${C.npt_hours_mae_range ? `; over ${C.repeats} runs its error ranged ${C.npt_hours_mae_range[0].toFixed(2)}–${C.npt_hours_mae_range[1].toFixed(2)} h` : ""}.</p></section>
+    <section class="tile span-12"><h2 class="tile-label">${esc(m.groq.meta.model)} · generated ${esc(m.groq.meta.generated)}</h2><div class="scroll">${table(o)}</div></section>
     ${m.mock ? `<section class="tile span-12"><h2 class="tile-label">Mock keyword classifier (fallback) · optimistic, its keywords match the synthetic data</h2><div class="scroll">${table(m.mock.runs)}</div></section>` : ""}`;
 }
 

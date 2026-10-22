@@ -1,0 +1,75 @@
+{
+  "meta": {
+    "backend": "groq",
+    "model": "openai/gpt-oss-20b (Groq)",
+    "reports": 15,
+    "generated": "2026-10-23 01:44"
+  },
+  "runs": {
+    "Graph with Critic": {
+      "npt_hours_mae": 0.067,
+      "category_accuracy": 1.0,
+      "critic_catch_rate": 1.0,
+      "evidence_rate": 1.0,
+      "logs_adding_to_24h": "15/15",
+      "false_npt_lines": 1,
+      "reports_exact_npt": "14/15",
+      "seconds": 96.3
+    },
+    "Graph without Critic": {
+      "npt_hours_mae": 0.767,
+      "category_accuracy": 0.897,
+      "critic_catch_rate": null,
+      "evidence_rate": 1.0,
+      "logs_adding_to_24h": "13/15",
+      "false_npt_lines": 2,
+      "reports_exact_npt": "11/15",
+      "seconds": 93.8
+    },
+    "Single-prompt chatbot": {
+      "npt_hours_mae": 0.566,
+      "npt_hours_mae_range": [
+        0.433,
+        0.633
+      ],
+      "category_accuracy": 0.943,
+      "critic_catch_rate": null,
+      "evidence_rate": 1.0,
+      "logs_adding_to_24h": "13/15 / 13/15 / 13/15",
+      "reports_exact_npt": "13/15 / 13/15 / 14/15",
+      "false_npt_lines": 0.7,
+      "repeats": 3,
+      "per_repeat": [
+        {
+          "npt_hours_mae": 0.633,
+          "category_accuracy": 0.931,
+          "critic_catch_rate": null,
+          "evidence_rate": 1.0,
+          "logs_adding_to_24h": "13/15",
+          "false_npt_lines": 1,
+          "reports_exact_npt": "13/15"
+        },
+        {
+          "npt_hours_mae": 0.633,
+          "category_accuracy": 0.931,
+          "critic_catch_rate": null,
+          "evidence_rate": 1.0,
+          "logs_adding_to_24h": "13/15",
+          "false_npt_lines": 1,
+          "reports_exact_npt": "13/15"
+        },
+        {
+          "npt_hours_mae": 0.433,
+          "category_accuracy": 0.966,
+          "critic_catch_rate": null,
+          "evidence_rate": 1.0,
+          "logs_adding_to_24h": "13/15",
+          "false_npt_lines": 0,
+          "reports_exact_npt": "14/15"
+        }
+      ],
+      "seconds": 366.3,
+      "note": "mean of 3 runs; '/' separates the runs"
+    }
+  }
+}
