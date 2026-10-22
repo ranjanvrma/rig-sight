@@ -9,9 +9,9 @@ Ranjan Verma and Rahul Narkhede
 
 All data is synthetic. This is a classroom proof of concept, not a certified engineering or safety tool.
 
-**Live:** [rig-sight.onrender.com](https://rig-sight.onrender.com/) (web app) ·
-[rig-sight.streamlit.app](https://rig-sight.streamlit.app/) (Streamlit PoC). Both run on the mock model online; see
-[Deployment](#deployment).
+**Live:** [rig-sight.onrender.com](https://rig-sight.onrender.com/) (runs on the mock model online; see
+[Deployment](#deployment)).
+**Code:** [github.com/ranjanvrma/rig-sight](https://github.com/ranjanvrma/rig-sight)
 
 **Submission** ([submission/](submission/)):
 [presentation (PPT)](submission/Rig_Sight_CA3_Presentation.pptx) ·
@@ -44,7 +44,7 @@ without reading each one line by line?
   actions apart, with a source line for every NPT claim
 - Pauses for the drilling engineer to approve, or reject with a comment such as `line 7 is planned, not NPT`,
   which the graph acts on before asking again
-- Shows all of it live in Streamlit: the agent trace, KPIs, an annotated report, a 24-hour timeline, NPT by
+- Shows all of it live in a web app: the agent pipeline, KPIs, an annotated report, a 24-hour timeline, NPT by
   category, the Critic's checks, memory and evaluation results
 
 ## Agents
@@ -82,19 +82,18 @@ depth. Model confidence below 0.7 is flagged for the engineer.
 ![Architecture](web/architecture.png)
 
 Hub and spoke: every agent hands back to the Orchestrator, and all of them read and write one shared state.
-Reference data, the SQLite incident memory and the LangGraph checkpointer sit outside the graph. The app's
-**Architecture** tabs (web app and Streamlit) show the same graph.
+Reference data, the SQLite incident memory and the LangGraph checkpointer sit outside the graph. The web app's
+**Architecture** page shows the same graph.
 
-This is the team's design diagram. The final code follows it, with a few differences: the Planner is rule based
-(not LLM based), `recursion_limit` is 50 rather than 25 (the worst case needs 32 steps), the model is
-`qwen2.5:3b` because `llama3.1:8b` does not fit in 4 GB of GPU memory, classification is one
-`classify_activities` tool over all lines, the chart is an Altair timeline plus NPT by category, and the Critic
-also checks gaps, overlaps, unparseable lines and the header.
+This is the team's design diagram, updated to match the final code (rule-based Planner, `qwen2.5:3b`,
+`recursion_limit` 50, the web app as the front end). Two details are simplified in the drawing: classification runs
+as one `classify_activities` tool over all lines, and the Critic also checks gaps, overlaps, unparseable lines and
+the header.
 
 ## Technology
 
 Python · LangGraph 1.2 (StateGraph, ToolNode, `interrupt()`, SqliteSaver checkpointer) · LangChain Core 1.6 ·
-Ollama with `qwen2.5:3b` (local, free) or a mock classifier · Streamlit + Altair · SQLite · pytest.
+Ollama with `qwen2.5:3b` (local, free) or a mock classifier · FastAPI + plain HTML/CSS/JavaScript · SQLite · pytest.
 
 "The model reads, Python counts": the language model only labels log lines. Every number is computed by a tool,
 so the Critic can check it exactly.
@@ -102,9 +101,8 @@ so the Critic can check it exactly.
 ## Repository
 
 ```
-app.py                 Streamlit UI (the CA-3 PoC)
-api.py                 FastAPI server for the web frontend
-web/                   bento-grid frontend (index.html, styles.css, app.js, architecture.png)
+api.py                 FastAPI server: API + the web pages
+web/                   the frontend (index.html, styles.css, app.js, images); no build step
 graph.py               DDRState, the eight nodes, route(), graph build, human-in-the-loop
 tools.py               Executor tools (ToolNode) and Research lookups; all arithmetic
 llm.py                 the only place a model is called: Ollama, mock fallback, chatbot baseline
@@ -112,7 +110,7 @@ memory.py              SQLite incident memory, failed cases, engineer feedback
 evaluate.py            scores the 15 reports: with Critic / without Critic / single-prompt chatbot
 data/                  generate_data.py, reports/, answer_key.json, reference files, incidents.sqlite (seed)
 results/               metrics_<backend>.json and per_report_<backend>.csv (ollama and mock)
-tests/                 pytest suite (tools, graph, dataset, Streamlit app, web API)
+tests/                 pytest suite (tools, graph, dataset, web API)
 submission/            final PPT, report and repository-link DOCX
 runtime/               created on first run: working copy of memory + checkpoints (git-ignored)
 ```
@@ -120,7 +118,7 @@ runtime/               created on first run: working copy of memory + checkpoint
 ## Setup
 
 Python 3.11 or newer. Tested on Python 3.14 (local) and 3.11 (clean virtual environment). On Python 3.14,
-LangChain prints a harmless warning about Pydantic V1; for Streamlit Community Cloud pick 3.11 or 3.12.
+LangChain prints a harmless warning about Pydantic V1.
 
 ```bash
 python -m venv .venv
@@ -132,16 +130,16 @@ python -m venv .venv
 pip install -r requirements-dev.txt     # runtime deps + pytest (requirements.txt alone is enough to run the app)
 ```
 
-## Run the web app (bento frontend)
+## Run the app
 
 ```bash
 python -m uvicorn api:app --port 8000
 ```
 
-Open http://127.0.0.1:8000 (online: https://rig-sight.onrender.com/). A FastAPI server (`api.py`) wraps the same LangGraph agents and streams every agent
-step to a hand-built bento-grid frontend in `web/` (plain HTML, CSS and JavaScript, no build step). It has the same
-features as the Streamlit app: report picker and custom reports, live agent pipeline, KPIs, annotated time log,
-24-hour timeline, Critic checks, insight report, engineer approve / reject, evaluation and memory.
+Open http://127.0.0.1:8000 (online: https://rig-sight.onrender.com/). A small FastAPI server (`api.py`) runs the LangGraph agents and streams every agent
+step to the page in `web/` (plain HTML, CSS and JavaScript, no build step): report picker and custom reports, live
+agent pipeline, KPIs, annotated time log, 24-hour timeline, Critic checks, insight report, engineer approve /
+reject, evaluation and memory. The model selector in the top bar switches between Ollama and the mock.
 
 Pages are real URLs (`/`, `/evaluation`, `/memory`, `/architecture`, plus a 404 page), rendered on the server with
 their own title, description, canonical URL, Open Graph tags and structured data; `/robots.txt` and `/sitemap.xml`
@@ -156,24 +154,14 @@ support (checked with axe-core: no WCAG 2 A/AA violations), and no horizontal sc
 The server sends security headers (a Content-Security-Policy, `nosniff`, no framing), limits pasted reports to
 20,000 characters and comments to 1,000, and caches static files by content version.
 
-## Run the Streamlit app (CA-3 PoC)
-
-Online, nothing to install: **https://rig-sight.streamlit.app/** (runs on the mock classifier).
-
-Locally, with the option of the real model:
-
-```bash
-streamlit run app.py
-```
-
-Pick a report in the sidebar and press **Run agents**. Suggested demo order:
+**Suggested demo order** (pick a report, press **Run agents**):
 
 1. **W-01 · Day 10**: clean day, 0 h NPT
 2. **W-02 · Day 10**: tool failure, 12 h, MWD fix pulled from memory
 3. **W-02 · Day 14**: the first pass adds to 23.5 h; the Critic names the 20:30-21:00 gap; the retry recovers it
    from REMARKS. With Ollama, the model also labels line 7 (slip and cut, planned work) as NPT: reject with
    `line 7 is planned, not NPT`, the graph re-runs to the correct 8.0 h, then approve
-4. **✍ Custom report**: paste any report. The sample has an invalid time (`12:00-2:00`), which is marked as a
+4. **Custom report**: paste any report. The sample has an invalid time (`12:00-2:00`), which is marked as a
    source error and left unrepaired
 
 ## Tests and evaluation
@@ -182,11 +170,11 @@ Pick a report in the sidebar and press **Run agents**. Suggested demo order:
 python -m pytest
 ```
 
-48 tests, all passing: tool parsing and validation (malformed lines, impossible and reversed times, missing and
+57 tests, all passing: tool parsing and validation (malformed lines, impossible and reversed times, missing and
 invalid reference files), all 15 reports against the answer key, the Critic catching both planted errors, the
 retry, failed cases in memory, the no-Critic ablation, approve and reject-with-override, a missing header, an
 empty log, an unknown well, the worst-case retry limit, honest mock reporting, the LLM-summary number guard,
-the Ollama fallback, the dataset generator, and the Streamlit app headless (AppTest). Tests use the mock and a
+the Ollama fallback, the dataset generator, and the web API (streaming runs, review, pages, SEO files, headers, input limits, rate limit). Tests use the mock and a
 temporary database, so they never touch a running model or the committed data.
 
 ```bash
@@ -228,7 +216,7 @@ not depend on the agents.
 - `answer_key.json`: true label per line, NPT hours, depth against plan, ROP
 
 The app never writes to `data/`: it copies the seed memory to `runtime/memory.sqlite` on first use. The
-**Memory** tab has a reset button.
+**Memory** page has a reset button.
 
 ## Ollama and the mock fallback
 
@@ -237,7 +225,7 @@ ollama pull qwen2.5:3b
 ```
 
 With Ollama running and the model pulled, the app and `evaluate.py` use it (`RIG_LLM=auto`, the default). Without
-it, a keyword classifier built from `npt_codes.json` takes over, and the sidebar, every activity's `labelled_by`
+it, a keyword classifier built from `npt_codes.json` takes over, and the top bar, every activity's `labelled_by`
 field and every report say so. Settings:
 
 | Variable | Default | Meaning |
@@ -269,20 +257,20 @@ company systems · support for the IADC standard DDR fields.
 
 ## Deployment
 
-Two deployments, both built from this repository's `main` branch and both on the mock model, because free hosts
-cannot run Ollama (the real `qwen2.5:3b` runs locally):
+The app is deployed on **Render** (free web service) from this repository's `main` branch:
+**https://rig-sight.onrender.com/**
 
-| | Web app (bento frontend) | Streamlit PoC |
-|---|---|---|
-| URL | https://rig-sight.onrender.com/ | https://rig-sight.streamlit.app/ |
-| Host | Render, free web service | Streamlit Community Cloud |
-| Runs | `uvicorn api:app --host 0.0.0.0 --port $PORT` | `app.py` |
-| Settings | build `pip install -r requirements.txt`; env `PYTHON_VERSION=3.12`, `RIG_LLM=mock` | Python 3.11 or 3.12 |
-| Updates | redeploys on every push to `main` | redeploys on push; if it looks stale, **Manage app → ⋮ → Reboot app** |
-| Sleeps | after about 15 minutes without visitors; the next visit takes about a minute | after a period without traffic |
+| Setting | Value |
+|---|---|
+| Build command | `pip install -r requirements.txt` |
+| Start command | `uvicorn api:app --host 0.0.0.0 --port $PORT` |
+| Environment | `PYTHON_VERSION=3.12`, `RIG_LLM=mock` |
+| Updates | redeploys on every push to `main` |
+| Sleeps | after about 15 minutes without visitors; the next visit takes about a minute |
 
-On both, memory and checkpoints live in `runtime/` on the server: they are temporary (wiped when the app restarts,
-sleeps or redeploys) and shared by everyone using it. The Evaluation views show the committed `qwen2.5:3b` and mock
-results from `results/`. Online, W-02 Day 14 gives 8.0 h NPT straight away (the mock does not make the slip-and-cut
+Free hosts cannot run Ollama, so the online app uses the mock classifier; the real `qwen2.5:3b` runs locally.
+Memory and checkpoints live in `runtime/` on the server: they are temporary (wiped when the app restarts, sleeps or
+redeploys) and shared by everyone using it. The Evaluation page shows the committed `qwen2.5:3b` and mock results
+from `results/`. Online, W-02 Day 14 gives 8.0 h NPT straight away (the mock does not make the slip-and-cut
 mistake); locally with Ollama it gives 11.0 h first, and rejecting with `line 7 is planned, not NPT` corrects it to
 8.0 h.

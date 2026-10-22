@@ -1,6 +1,6 @@
 """Reading the Rig - web API and server-rendered pages for the frontend in web/.
 
-Wraps the same LangGraph agents as the Streamlit app. Runs stream each agent step to the browser as
+Wraps the LangGraph agents. Runs stream each agent step to the browser as
 Server-Sent Events, and the engineer's decision resumes the paused graph.
 Pages (/, /evaluation, /memory, /architecture) are rendered on the server with their own title, description,
 canonical URL, Open Graph tags and structured data; unknown paths get a real 404 page.

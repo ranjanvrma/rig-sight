@@ -9,7 +9,6 @@ env/
 # secrets and local config
 .env
 *.env
-.streamlit/secrets.toml
 
 # runtime state written by the app (memory copy, LangGraph checkpoints)
 runtime/
