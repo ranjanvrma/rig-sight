@@ -9,14 +9,16 @@ Ranjan Verma and Rahul Narkhede
 
 All data is synthetic. This is a classroom proof of concept, not a certified engineering or safety tool.
 
-**Live demo:** [rig-sight.streamlit.app](https://rig-sight.streamlit.app/) (Streamlit Community Cloud, mock model;
-see [Deployment](#deployment))
+**Live:** [rig-sight.onrender.com](https://rig-sight.onrender.com/) (web app) ·
+[rig-sight.streamlit.app](https://rig-sight.streamlit.app/) (Streamlit PoC). Both run on the mock model online; see
+[Deployment](#deployment).
 
 **Submission** ([submission/](submission/)):
 [presentation (PPT)](submission/Rig_Sight_CA3_Presentation.pptx) ·
 [report (DOCX)](submission/Rig_Sight_CA3_Report.docx) ·
 [repository link (DOCX)](submission/Rig_Sight_CA3_Repository_Link.docx). The codebase is this repository.
-[App screenshots](docs/figures/) are in `docs/figures/`.
+
+![Reading the Rig web app](web/preview.jpg)
 
 ## Problem
 
@@ -77,11 +79,11 @@ depth. Model confidence below 0.7 is flagged for the engineer.
 
 ## Architecture
 
-![Architecture](docs/figures/architecture_original.png)
+![Architecture](web/architecture.png)
 
 Hub and spoke: every agent hands back to the Orchestrator, and all of them read and write one shared state.
 Reference data, the SQLite incident memory and the LangGraph checkpointer sit outside the graph. The app's
-**Architecture** tab draws the same graph.
+**Architecture** tabs (web app and Streamlit) show the same graph.
 
 This is the team's design diagram. The final code follows it, with a few differences: the Planner is rule based
 (not LLM based), `recursion_limit` is 50 rather than 25 (the worst case needs 32 steps), the model is
@@ -102,7 +104,7 @@ so the Critic can check it exactly.
 ```
 app.py                 Streamlit UI (the CA-3 PoC)
 api.py                 FastAPI server for the web frontend
-web/                   bento-grid frontend (index.html, styles.css, app.js)
+web/                   bento-grid frontend (index.html, styles.css, app.js, architecture.png)
 graph.py               DDRState, the eight nodes, route(), graph build, human-in-the-loop
 tools.py               Executor tools (ToolNode) and Research lookups; all arithmetic
 llm.py                 the only place a model is called: Ollama, mock fallback, chatbot baseline
@@ -110,10 +112,8 @@ memory.py              SQLite incident memory, failed cases, engineer feedback
 evaluate.py            scores the 15 reports: with Critic / without Critic / single-prompt chatbot
 data/                  generate_data.py, reports/, answer_key.json, reference files, incidents.sqlite (seed)
 results/               metrics_<backend>.json and per_report_<backend>.csv (ollama and mock)
-tests/                 pytest suite (tools, graph, dataset, app)
-docs/figures/          architecture diagram and real app screenshots
-docs/build/            scripts that rendered the diagram, captured the screenshots and built the PPT and DOCX
-submission/            final PPT and DOCX
+tests/                 pytest suite (tools, graph, dataset, Streamlit app, web API)
+submission/            final PPT, report and repository-link DOCX
 runtime/               created on first run: working copy of memory + checkpoints (git-ignored)
 ```
 
@@ -138,7 +138,7 @@ pip install -r requirements-dev.txt     # runtime deps + pytest (requirements.tx
 python -m uvicorn api:app --port 8000
 ```
 
-Open http://127.0.0.1:8000. A FastAPI server (`api.py`) wraps the same LangGraph agents and streams every agent
+Open http://127.0.0.1:8000 (online: https://rig-sight.onrender.com/). A FastAPI server (`api.py`) wraps the same LangGraph agents and streams every agent
 step to a hand-built bento-grid frontend in `web/` (plain HTML, CSS and JavaScript, no build step). It has the same
 features as the Streamlit app: report picker and custom reports, live agent pipeline, KPIs, annotated time log,
 24-hour timeline, Critic checks, insight report, engineer approve / reject, evaluation and memory.
@@ -256,30 +256,20 @@ company systems · support for the IADC standard DDR fields.
 
 ## Deployment
 
-The app is deployed on Streamlit Community Cloud at **https://rig-sight.streamlit.app/**, from this repository's
-`main` branch with `app.py` as the entry point. A push to `main` normally redeploys it; if the live app looks older
-than the code here (for example, no **Reset memory** button in the Memory tab), reboot it from the Streamlit Cloud
-dashboard (**Manage app → ⋮ → Reboot app**). W-02 Day 14 on the live app gives 8.0 h NPT: the Critic catches the
-23.5 h log and the retry recovers the missing half hour.
+Two deployments, both built from this repository's `main` branch and both on the mock model, because free hosts
+cannot run Ollama (the real `qwen2.5:3b` runs locally):
 
-**What is different from running it locally**
-
-| | Live app (Streamlit Cloud) | Local (`streamlit run app.py`) |
+| | Web app (bento frontend) | Streamlit PoC |
 |---|---|---|
-| Language model | Mock keyword classifier only. The cloud has no Ollama, so choosing Ollama in the sidebar shows a warning and falls back to the mock | `qwen2.5:3b` through Ollama when it is running, else the mock |
-| What the app says | Sidebar: "Active: mock keyword classifier"; every report: "Lines labelled by: mock" | The model actually used |
-| W-02 Day 14 | 8.0 h NPT straight away (the mock does not make the slip-and-cut mistake) | With Ollama, 11.0 h first; reject with `line 7 is planned, not NPT` to get 8.0 h |
-| Evaluation tab | Shows the committed `qwen2.5:3b` and mock results from `results/`. **Re-run evaluation** there scores the mock only | Re-runs with whichever model is active |
-| Memory and checkpoints | Written to `runtime/` on the server. This is temporary: it is wiped when the app restarts, sleeps or redeploys, and it is shared by everyone using the app at the same time | Kept in `runtime/` until you delete it or press Reset |
+| URL | https://rig-sight.onrender.com/ | https://rig-sight.streamlit.app/ |
+| Host | Render, free web service | Streamlit Community Cloud |
+| Runs | `uvicorn api:app --host 0.0.0.0 --port $PORT` | `app.py` |
+| Settings | build `pip install -r requirements.txt`; env `PYTHON_VERSION=3.12`, `RIG_LLM=mock` | Python 3.11 or 3.12 |
+| Updates | redeploys on every push to `main` | redeploys on push; if it looks stale, **Manage app → ⋮ → Reboot app** |
+| Sleeps | after about 15 minutes without visitors; the next visit takes about a minute | after a period without traffic |
 
-Settings (only needed if you deploy your own copy):
-
-1. Fork or push the repository to GitHub
-2. On [share.streamlit.io](https://share.streamlit.io) choose **Create app**, pick the repository, branch `main`
-   and main file `app.py`
-3. Under **Advanced settings** choose Python 3.11 or 3.12 (3.14 works locally but prints a LangChain warning).
-   No secrets or environment variables are needed: `RIG_LLM=auto` falls back to the mock when Ollama is absent
-4. `requirements.txt` and `.streamlit/config.toml` (dark theme, headless) are picked up automatically
-
-Use the live app to show the workflow to anyone without setup. For results with the real model (and the
-engineer correcting the model's mistake), run it locally with Ollama.
+On both, memory and checkpoints live in `runtime/` on the server: they are temporary (wiped when the app restarts,
+sleeps or redeploys) and shared by everyone using it. The Evaluation views show the committed `qwen2.5:3b` and mock
+results from `results/`. Online, W-02 Day 14 gives 8.0 h NPT straight away (the mock does not make the slip-and-cut
+mistake); locally with Ollama it gives 11.0 h first, and rejecting with `line 7 is planned, not NPT` corrects it to
+8.0 h.

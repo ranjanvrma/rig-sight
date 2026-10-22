@@ -189,4 +189,3 @@ def index():
 
 
 app.mount("/static", StaticFiles(directory=WEB), name="static")
-app.mount("/figures", StaticFiles(directory=ROOT / "docs" / "figures"), name="figures")
