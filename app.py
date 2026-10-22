@@ -266,7 +266,7 @@ with tab_run:
         text = v.get("report_text") or (DATA / "reports" / f"{rid}.txt").read_text()
 
     tags = f'<span class="tag">{"Custom report" if rid == CUSTOM else rid.replace("_D", " · Day ")}</span>'
-    tags += (f'<span class="tag err">planted error</span>' if k and k["critic_should_fail_first_pass"] else "")
+    tags += ('<span class="tag err">planted error</span>' if k and k["critic_should_fail_first_pass"] else "")
     if v.get("critic_verdict") == "FAIL":
         tags += '<span class="tag err">critic fail, unresolved</span>'
     if rid == CUSTOM and active and "total_hours" in v:

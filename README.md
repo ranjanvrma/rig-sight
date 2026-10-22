@@ -143,6 +143,19 @@ step to a hand-built bento-grid frontend in `web/` (plain HTML, CSS and JavaScri
 features as the Streamlit app: report picker and custom reports, live agent pipeline, KPIs, annotated time log,
 24-hour timeline, Critic checks, insight report, engineer approve / reject, evaluation and memory.
 
+Pages are real URLs (`/`, `/evaluation`, `/memory`, `/architecture`, plus a 404 page), rendered on the server with
+their own title, description, canonical URL, Open Graph tags and structured data; `/robots.txt` and `/sitemap.xml`
+are generated. Light and dark themes (follows the system, remembered per browser), keyboard and screen-reader
+support (checked with axe-core: no WCAG 2 A/AA violations), and no horizontal scrolling down to 390 px.
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `RIG_SITE_URL` | `https://rig-sight.onrender.com` | used for canonical URLs, Open Graph and the sitemap |
+| `RIG_RUN_LIMIT` / `RIG_RUN_WINDOW` | `30` / `600` | agent runs allowed per visitor per window (seconds); more get HTTP 429 |
+
+The server sends security headers (a Content-Security-Policy, `nosniff`, no framing), limits pasted reports to
+20,000 characters and comments to 1,000, and caches static files by content version.
+
 ## Run the Streamlit app (CA-3 PoC)
 
 Online, nothing to install: **https://rig-sight.streamlit.app/** (runs on the mock classifier).

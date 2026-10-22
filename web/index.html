@@ -1,128 +1,235 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-view="{{VIEW}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reading the Rig</title>
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<meta name="robots" content="{{ROBOTS}}">
+<link rel="canonical" href="{{CANONICAL}}">
+<meta name="theme-color" content="#0b0a09" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f6f3ec" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Reading the Rig">
+<meta property="og:title" content="{{TITLE}}">
+<meta property="og:description" content="{{DESCRIPTION}}">
+<meta property="og:url" content="{{CANONICAL}}">
+<meta property="og:image" content="{{SITE}}/static/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Reading the Rig dashboard analysing a daily drilling report">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/static/favicon.svg?v={{V}}" type="image/svg+xml">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="apple-touch-icon" href="/static/apple-touch-icon.png?v={{V}}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/styles.css">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/styles.css?v={{V}}">
+<script src="/static/theme.js?v={{V}}"></script>
+<script type="application/ld+json">{{JSONLD}}</script>
 </head>
 <body>
+<a class="skip" href="#main">Skip to content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v5M12 18v.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 019.5 4 8 8 0 1020 14.5z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 00-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.2-3.4-1.2-.4-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5a3.9 3.9 0 011-2.7 3.6 3.6 0 01.1-2.7s.8-.3 2.8 1a9.6 9.6 0 015 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7a3.9 3.9 0 011 2.7c0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0012 2z"/></symbol>
+</svg>
+
 <header class="topbar">
-  <div class="brand">
-    <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
-    <div>
-      <div class="brand-name">READING THE RIG</div>
-      <div class="brand-sub">Agentic AI for Daily Drilling Reports</div>
-    </div>
-  </div>
-  <nav class="tabs" role="tablist">
-    <button class="tab active" data-view="analyse" role="tab">Analyse</button>
-    <button class="tab" data-view="evaluation" role="tab">Evaluation</button>
-    <button class="tab" data-view="memory" role="tab">Memory</button>
-    <button class="tab" data-view="architecture" role="tab">Architecture</button>
+  <a class="brand" href="/" data-link aria-label="Reading the Rig home">
+    <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><g fill="currentColor"><rect x="3" y="7" width="7" height="18" rx="1.5"/><rect x="12.5" y="13" width="7" height="12" rx="1.5"/><rect x="22" y="7" width="7" height="18" rx="1.5"/></g></svg>
+    <span><span class="brand-name">READING THE RIG</span><span class="brand-sub">Agentic AI for Daily Drilling Reports</span></span>
+  </a>
+  <button class="icon-btn menu-btn" id="menuBtn" aria-expanded="false" aria-controls="nav" aria-label="Open menu"><svg><use href="#i-menu"/></svg></button>
+  <nav id="nav" class="nav" aria-label="Main">
+    <a href="/" data-link data-view="analyse">Analyse</a>
+    <a href="/evaluation" data-link data-view="evaluation">Evaluation</a>
+    <a href="/memory" data-link data-view="memory">Memory</a>
+    <a href="/architecture" data-link data-view="architecture">Architecture</a>
   </nav>
-  <div class="model" title="Language model used to label log lines">
-    <span class="dot" id="modelDot"></span>
-    <select id="modelSelect" aria-label="Language model">
-      <option value="ollama">Ollama · qwen2.5:3b</option>
-      <option value="mock">Mock (keyword rules)</option>
-    </select>
+  <div class="top-actions">
+    <label class="model" title="Language model that labels log lines">
+      <span class="dot" id="modelDot" aria-hidden="true"></span>
+      <span class="sr-only">Language model</span>
+      <select id="modelSelect">
+        <option value="ollama">Ollama · qwen2.5:3b</option>
+        <option value="mock">Mock (keyword rules)</option>
+      </select>
+    </label>
+    <button class="icon-btn" id="themeBtn" aria-label="Switch to light theme"><svg><use href="#i-sun"/></svg></button>
   </div>
 </header>
 
-<main>
+<main id="main" tabindex="-1">
+  <div class="banner hidden" id="banner" role="alert"><svg><use href="#i-alert"/></svg><span id="bannerText"></span>
+    <button class="btn small" id="bannerRetry">Retry</button></div>
+
   <!-- ================= ANALYSE ================= -->
-  <section class="view active" id="view-analyse">
+  <section class="view" id="view-analyse" aria-labelledby="h-analyse">
+    <div class="page-head">
+      <div>
+        <h1 id="h-analyse">Find the lost hours in a daily drilling report</h1>
+        <p class="lede">Agents plan, read, compute and check the report, then wait for you to approve. Every number is computed by Python and sourced to a line.</p>
+      </div>
+    </div>
     <div class="bento">
-      <div class="tile control span-5">
-        <div class="tile-label">Daily drilling report</div>
-        <select id="reportSelect" aria-label="Daily drilling report"></select>
+      <section class="tile span-5" aria-labelledby="h-report">
+        <h2 class="tile-label" id="h-report">Daily drilling report</h2>
+        <label class="sr-only" for="reportSelect">Choose a report</label>
+        <select id="reportSelect" class="input" disabled><option>Loading reports…</option></select>
         <div class="report-tag" id="reportTag"></div>
-      </div>
-      <div class="tile control span-4">
-        <div class="tile-label">Agents</div>
-        <label class="switch"><input type="checkbox" id="criticToggle" checked><span class="track"></span>
+      </section>
+      <section class="tile span-4" aria-labelledby="h-agents">
+        <h2 class="tile-label" id="h-agents">Agents</h2>
+        <label class="switch"><input type="checkbox" id="criticToggle" checked><span class="track" aria-hidden="true"></span>
           <span>Critic agent <em>checks the work and sends it back</em></span></label>
-        <div class="hint" id="modelHint"></div>
-      </div>
-      <button class="tile run span-3" id="runBtn">
+        <p class="hint" id="modelHint"></p>
+      </section>
+      <button class="tile run span-3" id="runBtn" disabled>
         <span class="run-kicker">LangGraph</span>
-        <span class="run-label">RUN AGENTS</span>
-        <span class="run-arrow" aria-hidden="true">→</span>
+        <span class="run-label">Run agents</span>
+        <svg class="run-icon" aria-hidden="true"><use href="#i-play"/></svg>
       </button>
 
-      <div class="tile kpi accent span-3" id="kpiNpt"><div class="tile-label">Non-productive time</div><div class="kpi-value">—</div><div class="kpi-sub">run a report</div></div>
-      <div class="tile kpi span-2" id="kpiHours"><div class="tile-label">Hours logged</div><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></div>
-      <div class="tile kpi span-2" id="kpiDepth"><div class="tile-label">Depth vs plan</div><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></div>
-      <div class="tile kpi span-2" id="kpiRop"><div class="tile-label">ROP</div><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></div>
-      <div class="tile kpi span-3" id="kpiCritic"><div class="tile-label">Critic</div><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></div>
+      <section class="tile kpi accent span-3" id="kpiNpt" aria-label="Non-productive time"><h2 class="tile-label">Non-productive time</h2><div class="kpi-value">—</div><div class="kpi-sub">Run a report</div></section>
+      <section class="tile kpi span-2" id="kpiHours" aria-label="Hours logged"><h2 class="tile-label">Hours logged</h2><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></section>
+      <section class="tile kpi span-2" id="kpiDepth" aria-label="Depth versus plan"><h2 class="tile-label">Depth vs plan</h2><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></section>
+      <section class="tile kpi span-2" id="kpiRop" aria-label="Rate of penetration"><h2 class="tile-label">ROP</h2><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></section>
+      <section class="tile kpi span-3" id="kpiCritic" aria-label="Critic verdict"><h2 class="tile-label">Critic</h2><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></section>
 
-      <div class="tile span-7 tall" id="reportTile">
-        <div class="tile-head"><div class="tile-label">Time log</div><div class="legend" id="legend"></div></div>
-        <div class="ddr" id="ddr"></div>
-        <textarea id="customText" class="hidden" spellcheck="false" aria-label="Custom report text"></textarea>
-      </div>
-      <div class="tile span-5 tall">
-        <div class="tile-head"><div class="tile-label">Agent pipeline</div><div class="live" id="liveBadge">idle</div></div>
-        <div class="pipeline" id="pipeline"></div>
-        <ol class="trace" id="trace"><li class="empty">Agent steps stream here as they happen.</li></ol>
-      </div>
+      <section class="tile span-7 tall" aria-labelledby="h-log">
+        <div class="tile-head"><h2 class="tile-label" id="h-log">Time log</h2><div class="legend" id="legend"></div></div>
+        <div class="ddr" id="ddr" aria-live="off"><div class="skeleton-lines"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+        <div class="custom hidden" id="customBox">
+          <label for="customText" class="field-label">Paste a report: header line, then <code>HH:MM-HH:MM activity</code> lines</label>
+          <textarea id="customText" class="input" spellcheck="false" maxlength="20000" aria-describedby="customHelp customError"></textarea>
+          <p class="field-help" id="customHelp"><span id="customCount">0</span> / 20,000 characters. Errors are left in for the Critic to find.</p>
+          <p class="field-error hidden" id="customError" role="alert"></p>
+        </div>
+      </section>
+      <section class="tile span-5 tall" aria-labelledby="h-pipe">
+        <div class="tile-head"><h2 class="tile-label" id="h-pipe">Agent pipeline</h2><span class="live" id="liveBadge">Idle</span></div>
+        <ol class="pipeline" id="pipeline" aria-label="Agent stages"></ol>
+        <ol class="trace" id="trace" aria-live="polite" aria-relevant="additions"><li class="empty">Agent steps stream here as they happen.</li></ol>
+      </section>
 
-      <div class="tile span-7">
-        <div class="tile-head"><div class="tile-label">Where the 24 hours went</div><div class="cost" id="costBadge"></div></div>
+      <section class="tile span-7" aria-labelledby="h-hours">
+        <div class="tile-head"><h2 class="tile-label" id="h-hours">Where the 24 hours went</h2><span class="cost" id="costBadge"></span></div>
         <div id="timeline" class="chart"></div>
         <div id="bars" class="chart"></div>
-      </div>
-      <div class="tile span-5">
-        <div class="tile-label">Critic checks</div>
-        <div id="critic" class="critic"><p class="muted">No checks yet.</p></div>
-      </div>
+      </section>
+      <section class="tile span-5" aria-labelledby="h-critic">
+        <h2 class="tile-label" id="h-critic">Critic checks</h2>
+        <div id="critic" class="critic"></div>
+      </section>
 
-      <div class="tile span-7 insight-tile">
-        <div class="tile-label">Daily insight report</div>
-        <div id="insight" class="insight"><p class="muted">The draft appears here when the agents finish.</p></div>
-      </div>
-      <div class="tile span-5 review-tile">
-        <div class="tile-label">Engineer review</div>
-        <div id="review" class="review"><p class="muted">Nothing to review yet.</p></div>
-        <div class="tile-label sub">Check against the answer key</div>
-        <div id="answerKey" class="answer-key"><p class="muted">Synthetic reports have a known answer.</p></div>
-      </div>
+      <section class="tile span-7" aria-labelledby="h-insight">
+        <h2 class="tile-label" id="h-insight">Daily insight report</h2>
+        <div id="insight" class="insight"></div>
+      </section>
+      <section class="tile span-5" aria-labelledby="h-review">
+        <h2 class="tile-label" id="h-review">Engineer review</h2>
+        <div id="review" class="review"></div>
+        <h3 class="tile-label sub">Check against the answer key</h3>
+        <div id="answerKey" class="answer-key"></div>
+      </section>
     </div>
   </section>
 
   <!-- ================= EVALUATION ================= -->
-  <section class="view" id="view-evaluation">
+  <section class="view" id="view-evaluation" aria-labelledby="h-eval">
+    <div class="page-head">
+      <div>
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/" data-link>Home</a><span aria-hidden="true">/</span><span aria-current="page">Evaluation</span></nav>
+        <h1 id="h-eval">Evaluation</h1>
+        <p class="lede">15 synthetic reports with known answers, scored three ways on the same model.</p>
+      </div>
+    </div>
     <div class="bento" id="evalGrid"></div>
   </section>
 
   <!-- ================= MEMORY ================= -->
-  <section class="view" id="view-memory">
+  <section class="view" id="view-memory" aria-labelledby="h-mem">
+    <div class="page-head">
+      <div>
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/" data-link>Home</a><span aria-hidden="true">/</span><span aria-current="page">Memory</span></nav>
+        <h1 id="h-mem">Incident memory</h1>
+        <p class="lede">What Research reads and what the Critic and the engineer write. Temporary on the hosted demo.</p>
+      </div>
+      <button class="btn" id="resetMem"><svg><use href="#i-refresh"/></svg>Reset to seed data</button>
+    </div>
     <div class="bento" id="memGrid"></div>
   </section>
 
   <!-- ================= ARCHITECTURE ================= -->
-  <section class="view" id="view-architecture">
-    <div class="bento">
-      <div class="tile span-12 diagram">
-        <div class="tile-label">LangGraph architecture · hub and spoke</div>
-        <a href="/static/architecture.png" target="_blank" rel="noopener">
-          <img src="/static/architecture.png" alt="Architecture diagram of the Reading the Rig agents"></a>
+  <section class="view" id="view-architecture" aria-labelledby="h-arch">
+    <div class="page-head">
+      <div>
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="/" data-link>Home</a><span aria-hidden="true">/</span><span aria-current="page">Architecture</span></nav>
+        <h1 id="h-arch">Architecture</h1>
+        <p class="lede">A LangGraph hub and spoke: every agent reads and writes one shared state and hands back to the Orchestrator.</p>
       </div>
-      <div class="tile span-4"><div class="tile-label">Orchestrator</div><p>Plain Python <code>route()</code> reads the shared state and picks the next agent. No model, fully predictable.</p></div>
-      <div class="tile span-4"><div class="tile-label">Planner · Research</div><p>Plan the work for this report, then pull the well plan, budget, NPT codes and similar past incidents.</p></div>
-      <div class="tile span-4"><div class="tile-label">Executor · ToolNode</div><p>Six Python tools parse, classify, sum, and compute ROP, depth and cost. The model only labels lines.</p></div>
-      <div class="tile span-6"><div class="tile-label">Critic</div><p>Checks 24 h, gaps, overlaps, bad lines, categories and evidence. Sends fixable problems back, at most three times.</p></div>
-      <div class="tile span-6"><div class="tile-label">Engineer</div><p><code>interrupt()</code> pauses the graph. Approve ends the run; reject with a comment re-runs it with your corrections.</p></div>
+    </div>
+    <div class="bento">
+      <figure class="tile span-12 diagram">
+        <a href="/static/architecture.png" target="_blank" rel="noopener" aria-label="Open the full-size architecture diagram">
+          <picture>
+            <source type="image/webp" srcset="/static/architecture-1600.webp?v={{V}} 1600w, /static/architecture.webp?v={{V}} 3200w" sizes="(max-width: 1500px) 100vw, 1460px">
+            <img src="/static/architecture.png?v={{V}}" width="3200" height="1711" loading="lazy" decoding="async"
+                 alt="Architecture diagram: Streamlit starts the graph; the Orchestrator routes to the Planner, Research, Executor with its ToolNode, and the Critic; the report writer drafts and the engineer approves or rejects.">
+          </picture>
+        </a>
+        <figcaption>The team's design diagram. The final code differs in small ways: a rule-based Planner, recursion limit 50, the qwen2.5:3b model, and extra Critic checks.</figcaption>
+      </figure>
+      <section class="tile span-4"><h2 class="tile-label">Orchestrator</h2><p>Plain Python <code>route()</code> reads the shared state and picks the next agent. No model, fully predictable.</p></section>
+      <section class="tile span-4"><h2 class="tile-label">Planner and Research</h2><p>Plan the work for this report, then pull the well plan, budget, NPT codes and similar past incidents.</p></section>
+      <section class="tile span-4"><h2 class="tile-label">Executor and ToolNode</h2><p>Six Python tools parse, classify, sum, and compute ROP, depth and cost. The model only labels lines.</p></section>
+      <section class="tile span-6"><h2 class="tile-label">Critic</h2><p>Checks 24 h, gaps, overlaps, bad lines, categories and evidence. Sends fixable problems back, at most three times.</p></section>
+      <section class="tile span-6"><h2 class="tile-label">Engineer</h2><p><code>interrupt()</code> pauses the graph. Approve ends the run; reject with a comment re-runs it with your corrections.</p></section>
+    </div>
+  </section>
+
+  <!-- ================= 404 ================= -->
+  <section class="view" id="view-notfound" aria-labelledby="h-404">
+    <div class="notfound tile">
+      <p class="code404" aria-hidden="true">404</p>
+      <h1 id="h-404">This page does not exist</h1>
+      <p class="lede">The link may be old or mistyped. These pages do exist:</p>
+      <ul class="links404">
+        <li><a href="/" data-link>Analyse a report</a></li>
+        <li><a href="/evaluation" data-link>Evaluation results</a></li>
+        <li><a href="/memory" data-link>Incident memory</a></li>
+        <li><a href="/architecture" data-link>Architecture</a></li>
+      </ul>
     </div>
   </section>
 </main>
 
-<footer>Synthetic data · classroom proof of concept · not a certified engineering or safety tool · Computed · Sourced · Approved</footer>
+<footer class="footer">
+  <p>Synthetic data. A classroom proof of concept, not a certified engineering or safety tool.</p>
+  <p>No accounts, no cookies, no tracking. Reports you paste are processed on this server and kept only in its temporary memory; your theme choice is stored in your browser.</p>
+  <p><a href="https://github.com/ranjanvrma/rig-sight" rel="noopener"><svg aria-hidden="true"><use href="#i-github"/></svg>Source on GitHub</a> · CA-3, Symbiosis Institute of Technology, Pune</p>
+</footer>
+
+<dialog id="confirm" aria-labelledby="confirmTitle">
+  <form method="dialog">
+    <h2 id="confirmTitle">Are you sure?</h2>
+    <p id="confirmText"></p>
+    <div class="dialog-actions"><button class="btn" value="cancel">Cancel</button><button class="btn danger" value="ok" id="confirmOk">Confirm</button></div>
+  </form>
+</dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script type="module" src="/static/app.js"></script>
+<div class="tooltip" id="tooltip" role="tooltip"></div>
+<script type="module" src="/static/app.js?v={{V}}"></script>
 </body>
 </html>
