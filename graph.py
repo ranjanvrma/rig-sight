@@ -317,7 +317,7 @@ def report_writer(state: DDRState) -> dict:
         facts.append(f"Similar past event: {events[0]['cause']} on {events[0]['well_id']} day {events[0]['day']}; "
                      f"fix used: {events[0]['fix']}.")
     summary = llm.write_summary("\n".join(facts))
-    summary_by = llm.model_name()
+    summary_by = llm.MODEL
     if not summary or not _numbers(summary) <= _numbers(" ".join(facts)):
         summary, summary_by = " ".join(facts), "template"   # guard: the LLM may not add a number Python did not compute
 

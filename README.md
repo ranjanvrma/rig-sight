@@ -92,7 +92,7 @@ also checks gaps, overlaps, unparseable lines and the header.
 ## Technology
 
 Python · LangGraph 1.2 (StateGraph, ToolNode, `interrupt()`, SqliteSaver checkpointer) · LangChain Core 1.6 ·
-Gemini `gemini-3.5-flash` (cloud, free tier) or Ollama `qwen2.5:3b` (local) or a mock classifier · Streamlit + Altair · SQLite · pytest.
+Ollama with `qwen2.5:3b` (local, free) or a mock classifier · Streamlit + Altair · SQLite · pytest.
 
 "The model reads, Python counts": the language model only labels log lines. Every number is computed by a tool,
 so the Critic can check it exactly.
@@ -103,11 +103,11 @@ so the Critic can check it exactly.
 app.py                 Streamlit UI
 graph.py               DDRState, the eight nodes, route(), graph build, human-in-the-loop
 tools.py               Executor tools (ToolNode) and Research lookups; all arithmetic
-llm.py                 the only place a model is called: Gemini, Ollama, mock fallback, chatbot baseline
+llm.py                 the only place a model is called: Ollama, mock fallback, chatbot baseline
 memory.py              SQLite incident memory, failed cases, engineer feedback
 evaluate.py            scores the 15 reports: with Critic / without Critic / single-prompt chatbot
 data/                  generate_data.py, reports/, answer_key.json, reference files, incidents.sqlite (seed)
-results/               metrics_<backend>.json and per_report_<backend>.csv (gemini, ollama, mock)
+results/               metrics_<backend>.json and per_report_<backend>.csv (ollama and mock)
 tests/                 pytest suite (tools, graph, dataset, app)
 docs/figures/          architecture diagram and real app screenshots
 docs/build/            scripts that rendered the diagram, captured the screenshots and built the PPT and DOCX
@@ -204,39 +204,25 @@ not depend on the agents.
 The app never writes to `data/`: it copies the seed memory to `runtime/memory.sqlite` on first use. The
 **Memory** tab has a reset button.
 
-## Language models: Gemini, Ollama or the mock
+## Ollama and the mock fallback
 
-The language model only labels log lines; Python does every number. Three options, picked in the sidebar:
-
-| Option | What it needs | Notes |
-|---|---|---|
-| **Gemini** (`gemini-3.5-flash`, cloud) | A free API key from [Google AI Studio](https://aistudio.google.com/apikey) | No local model. All lines of a report go in one request, answers are cached, busy responses are retried. The report text is sent to Google |
-| **Ollama** (`qwen2.5:3b`, local) | `ollama pull qwen2.5:3b` and Ollama running | Free, nothing leaves the computer |
-| **Mock** (keyword rules) | Nothing | Always available; the fallback whenever a model is missing or fails |
-
-`RIG_LLM=auto` (the default) picks Gemini if a key is configured, else Ollama if it is running, else the mock. If a
-model fails on a line, that line falls back to the mock, and the line, the sidebar and the report all say so.
-
-**Adding your Gemini key locally:** put it in `.streamlit/secrets.toml` (this file is git-ignored):
-
-```toml
-GEMINI_API_KEY = "your-key-here"
+```bash
+ollama pull qwen2.5:3b
 ```
 
-or set the `GEMINI_API_KEY` environment variable. The key goes in a request header, never in a URL, a log or the UI.
+With Ollama running and the model pulled, the app and `evaluate.py` use it (`RIG_LLM=auto`, the default). Without
+it, a keyword classifier built from `npt_codes.json` takes over, and the sidebar, every activity's `labelled_by`
+field and every report say so. Settings:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `RIG_LLM` | `auto` | `auto`, `gemini`, `ollama` or `mock` |
-| `GEMINI_API_KEY` | none | Gemini key (or `.streamlit/secrets.toml`) |
-| `RIG_GEMINI_MODEL` | `gemini-3.5-flash` | any Gemini model your key can use |
-| `RIG_GEMINI_RUN_LIMIT` | `5` | Gemini runs allowed per browser session (the free tier allows about 20 requests a day) |
+| `RIG_LLM` | `auto` | `auto`, `ollama` or `mock` |
 | `RIG_MODEL` | `qwen2.5:3b` | any Ollama model |
 | `OLLAMA_URL` | `http://127.0.0.1:11434` | Ollama server |
 | `RIG_LLM_SUMMARY` | off | `1` lets the model rephrase the summary |
 | `RIG_MEMORY_DB` | `runtime/memory.sqlite` | working memory database |
 
-The LLM summary is off by default for a reason found during testing: qwen2.5:3b kept every number but attached them
+The LLM summary is off by default for a reason found during testing: the model kept every number but attached them
 to the wrong categories ("weather and equipment, 3.5 hours and 2 hours respectively" when it was 2.0 h and 3.5 h).
 A guard rejects summaries with invented numbers, but it cannot catch swapped ones.
 
@@ -263,22 +249,14 @@ than the code here (for example, no **Reset memory** button in the Memory tab), 
 dashboard (**Manage app → ⋮ → Reboot app**). W-02 Day 14 on the live app gives 8.0 h NPT: the Critic catches the
 23.5 h log and the retry recovers the missing half hour.
 
-**Using Gemini on the live app:** in the Streamlit Cloud dashboard open the app's **Settings → Secrets**, add
-
-```toml
-GEMINI_API_KEY = "your-key-here"
-```
-
-and save; the app restarts with Gemini as its default model. Without the secret, it runs on the mock and says so.
-
 **What is different from running it locally**
 
 | | Live app (Streamlit Cloud) | Local (`streamlit run app.py`) |
 |---|---|---|
-| Language model | Gemini if the `GEMINI_API_KEY` secret is set, else the mock. There is no Ollama in the cloud, so choosing Ollama shows a warning and falls back to the mock | Gemini with a key, Ollama when it is running, else the mock |
-| Quota | Every visitor uses the key's free quota, so each browser session gets 5 Gemini runs (`RIG_GEMINI_RUN_LIMIT`), then the mock; when the daily free quota (about 20 requests) is used up, the app switches to the mock at once and says so. Running the evaluation with Gemini is only offered locally (about 100 requests) | Your own quota |
-| What the app says | The sidebar and every report name the model that labelled the lines | Same |
-| Evaluation tab | Shows the committed results from `results/` for every model. **Re-run evaluation** there is offered for the mock only when Gemini is active | Re-runs with whichever model is active (Gemini: `python evaluate.py`) |
+| Language model | Mock keyword classifier only. The cloud has no Ollama, so choosing Ollama in the sidebar shows a warning and falls back to the mock | `qwen2.5:3b` through Ollama when it is running, else the mock |
+| What the app says | Sidebar: "Active: mock keyword classifier"; every report: "Lines labelled by: mock" | The model actually used |
+| W-02 Day 14 | 8.0 h NPT straight away (the mock does not make the slip-and-cut mistake) | With Ollama, 11.0 h first; reject with `line 7 is planned, not NPT` to get 8.0 h |
+| Evaluation tab | Shows the committed `qwen2.5:3b` and mock results from `results/`. **Re-run evaluation** there scores the mock only | Re-runs with whichever model is active |
 | Memory and checkpoints | Written to `runtime/` on the server. This is temporary: it is wiped when the app restarts, sleeps or redeploys, and it is shared by everyone using the app at the same time | Kept in `runtime/` until you delete it or press Reset |
 
 Settings (only needed if you deploy your own copy):
@@ -286,6 +264,9 @@ Settings (only needed if you deploy your own copy):
 1. Fork or push the repository to GitHub
 2. On [share.streamlit.io](https://share.streamlit.io) choose **Create app**, pick the repository, branch `main`
    and main file `app.py`
-3. Under **Advanced settings** choose Python 3.11 or 3.12 (3.14 works locally but prints a LangChain warning), and
-   paste `GEMINI_API_KEY = "..."` into **Secrets** if you want Gemini
+3. Under **Advanced settings** choose Python 3.11 or 3.12 (3.14 works locally but prints a LangChain warning).
+   No secrets or environment variables are needed: `RIG_LLM=auto` falls back to the mock when Ollama is absent
 4. `requirements.txt` and `.streamlit/config.toml` (dark theme, headless) are picked up automatically
+
+Use the live app to show the workflow to anyone without setup. For results with the real model (and the
+engineer correcting the model's mistake), run it locally with Ollama.

@@ -5,7 +5,6 @@ warnings.filterwarnings("ignore", message=".*Pydantic V1.*")
 
 import html  # noqa: E402
 import json  # noqa: E402
-import os  # noqa: E402
 import uuid  # noqa: E402
 from pathlib import Path  # noqa: E402
 
@@ -23,7 +22,6 @@ ROOT = Path(__file__).parent
 DATA = ROOT / "data"
 KEYS = json.loads((DATA / "answer_key.json").read_text())
 CUSTOM = "CUSTOM"
-GEMINI_RUN_LIMIT = int(os.getenv("RIG_GEMINI_RUN_LIMIT", "5"))   # per browser session, protects the free quota
 SAMPLE_CUSTOM = """WELL W-02  DAY 15  DEPTH 2,700 m  COST USD 431,000
 00:00-05:00 Drilled 12-1/4 in hole from 2,610 m to 2,700 m
 05:00-07:30 Mud motor failure, POOH to change motor
@@ -225,33 +223,22 @@ with st.sidebar:
     rid = st.selectbox("Daily Drilling Report", list(KEYS) + [CUSTOM],
                        format_func=lambda r: ("✍ Custom report" if r == CUSTOM else r.replace('_D', ' · Day '))
                        + f"  —  {tag_for(r)}")
-    labels = {"gemini": f"Gemini · {llm.GEMINI_MODEL} (cloud)", "ollama": f"Ollama · {llm.MODEL} (local)",
-              "mock": "Mock (keyword rules)"}
-    st.session_state.setdefault("model_choice", llm.backend())
-    choice = st.radio("Language model", list(labels), format_func=labels.get, key="model_choice",
-                      help="Gemini: Google's API with a free-tier key. Ollama: a free model on this computer. "
-                           "The mock keeps the demo running when no model is available.")
-    used = st.session_state.get("gemini_runs", 0)
-    if choice == "gemini" and used >= GEMINI_RUN_LIMIT:
-        llm.set_backend("mock")
-        st.warning(f"This session has used its {GEMINI_RUN_LIMIT} Gemini runs (to protect the free-tier quota). "
-                   "Using the mock.")
+    ok, status = llm.ollama_status()
+    choice = st.radio("Language model", ["Mock (keyword rules)", f"Ollama · {llm.MODEL}"],
+                      index=1 if llm.backend() == "ollama" else 0, help="Free local model through Ollama. "
+                      "The mock keeps the demo running when no model is available.")
+    llm.set_backend("ollama" if choice.startswith("Ollama") else "mock")
+    if choice.startswith("Ollama") and not ok:
+        st.warning(status + ". Using the mock.")
     else:
-        active = llm.set_backend(choice)
-        if active != choice:
-            st.warning(llm.status(choice)[1] + ". Using the mock.")
-        else:
-            st.caption(f"Active: **{labels[active]}**"
-                       + (f" · {GEMINI_RUN_LIMIT - used} runs left this session" if active == "gemini" else ""))
+        st.caption(f"Active: **{'Ollama · ' + llm.MODEL if llm.backend() == 'ollama' else 'mock keyword classifier'}**")
     critic_on = st.toggle("Critic agent", value=True, help="Turn off to see what slips through without self-checking.")
     run = st.button("▶  Run agents", type="primary", width="stretch")
     st.divider()
     st.caption("Demo order: W-01 Day 10 (clean) → W-02 Day 10 (tool failure) → W-02 Day 14 (Critic catches "
-               "23.5 h). If a model labels planned work as NPT, reject with e.g. “line 7 is planned, not NPT”.")
+               "23.5 h; with Ollama, reject with “line 7 is planned, not NPT”)")
 
 if run:
-    if llm.backend() == "gemini":
-        st.session_state.gemini_runs = st.session_state.get("gemini_runs", 0) + 1
     st.session_state.update(thread=f"{rid}-{uuid.uuid4().hex[:6]}", events=[], report=rid, critic=critic_on)
     init = {"report_id": rid}
     if rid == CUSTOM:
@@ -414,10 +401,7 @@ with tab_eval:
     st.subheader("Evaluation on all 15 reports")
     st.caption("Every report is synthetic with planted events, so each has a known right answer. "
                "Results are saved per model, so the table always says which model produced it.")
-    if llm.backend() == "gemini":
-        st.caption("Re-running the evaluation with Gemini takes about 100 API requests, so it is not offered here: "
-                   "run `python evaluate.py` locally with your key.")
-    elif st.button(f"Re-run evaluation with the active model ({llm.backend()})"):
+    if st.button(f"Re-run evaluation with the active model ({llm.backend()})"):
         with st.spinner("Running 15 reports × each configuration…"):
             import evaluate
             evaluate.main()
@@ -426,8 +410,7 @@ with tab_eval:
              "logs_adding_to_24h": "Logs adding to 24 h", "reports_exact_npt": "Reports with exact NPT",
              "false_npt_lines": "False NPT lines ↓"}
     found = False
-    for backend, title in [("gemini", "Gemini (cloud API)"), ("ollama", "Local LLM through Ollama"),
-                           ("mock", "Mock keyword classifier (fallback)")]:
+    for backend, title in [("ollama", "Local LLM through Ollama"), ("mock", "Mock keyword classifier (fallback)")]:
         mpath = ROOT / "results" / f"metrics_{backend}.json"
         if not mpath.exists():
             continue

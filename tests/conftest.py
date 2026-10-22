@@ -1,5 +1,5 @@
 """Tests run on the mock classifier with a throwaway memory database, so they are fast,
-deterministic and never touch the committed seed data, a running Ollama or a real Gemini key."""
+deterministic and never touch the committed seed data or a running Ollama."""
 import os
 import shutil
 import sys
@@ -10,20 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 os.environ["RIG_LLM"] = "mock"
 os.environ["OLLAMA_URL"] = "http://127.0.0.1:9"     # nothing listens here
-for k in ("GEMINI_API_KEY", "GOOGLE_API_KEY"):          # a real key must never be used by the tests
-    os.environ.pop(k, None)
 warnings.filterwarnings("ignore", message=".*Pydantic V1.*")
 
 import pytest  # noqa: E402
-
-
-import llm as _llm  # noqa: E402
-
-REAL_GEMINI = _llm._gemini
-
-
-def _no_network(*a, **k):
-    raise AssertionError("tests must not call the real Gemini API")
 
 
 @pytest.fixture(autouse=True)
@@ -31,9 +20,6 @@ def isolated(tmp_path, monkeypatch):
     import llm
     import memory
     import tools
-    monkeypatch.setattr(llm, "SECRETS", tmp_path / "no-secrets.toml")   # ignore any local secrets file
-    monkeypatch.setattr(llm, "_gemini", _no_network)
-    llm._cache.clear()
     llm.set_backend("mock")
     db = tmp_path / "memory.sqlite"
     shutil.copy(ROOT / "data" / "incidents.sqlite", db)
@@ -62,12 +48,3 @@ def run(app):
         state = graph.run_until_review(application or app, report_id, tid, report_text=text)
         return state, {"configurable": {"thread_id": tid}, "recursion_limit": graph.RECURSION_LIMIT}
     return _run
-
-
-@pytest.fixture
-def real_gemini(monkeypatch):
-    """The real HTTP function, for tests that fake urlopen underneath it."""
-    import llm
-    monkeypatch.setattr(llm, "_gemini", REAL_GEMINI)
-    monkeypatch.setattr(llm.time, "sleep", lambda s: None)
-    return llm._gemini
