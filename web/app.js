@@ -117,7 +117,7 @@ async function loadStatus() {
     const s = await getJSON("/api/status");
     const sel = $("#modelSelect"), groq = sel.querySelector('option[value="groq"]');
     groq.disabled = !s.groq_ok;
-    groq.textContent = `Groq · ${s.groq_model}` + (s.groq_ok ? "" : " (unavailable)");
+    groq.textContent = `Groq · ${s.groq_model.split("/").pop()}` + (s.groq_ok ? "" : " (unavailable)");
     sel.title = s.groq_ok ? "" : s.groq_message;
     sel.value = s.backend;
     $("#modelDot").className = "dot " + (s.backend === "groq" ? "ok" : "warn");
