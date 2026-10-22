@@ -195,7 +195,7 @@ class ReviewIn(BaseModel):
 
 
 class ModelIn(BaseModel):
-    name: Literal["ollama", "mock"]
+    name: Literal["ollama", "groq", "mock"]
 
 
 @app.get("/api/reports")
@@ -207,8 +207,10 @@ def reports():
 @app.get("/api/status")
 def status():
     ok, msg = llm.ollama_status()
-    return {"backend": llm.backend(), "model": llm.MODEL if llm.backend() == "ollama" else "mock keyword classifier",
-            "ollama_ok": ok, "ollama_message": msg}
+    gok, gmsg = llm.groq_status()
+    return {"backend": llm.backend(), "model": llm.model_name() if llm.backend() != "mock" else "mock keyword classifier",
+            "ollama_ok": ok, "ollama_message": msg, "groq_ok": gok, "groq_message": gmsg,
+            "ollama_model": llm.MODEL, "groq_model": llm.GROQ_MODEL}
 
 
 @app.post("/api/model")

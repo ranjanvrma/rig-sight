@@ -111,27 +111,30 @@ document.addEventListener("click", (e) => {
 window.addEventListener("popstate", () => route(location.pathname, false));
 
 // ---------------- model ----------------
+// Ollama runs on a laptop; Groq is a free hosted model (what the online demo uses); mock is keyword rules.
 async function loadStatus() {
   try {
     const s = await getJSON("/api/status");
-    // No Ollama on this server (e.g. the free hosted demo): offer only what can actually run
-    const opt = $('#modelSelect option[value="ollama"]');
-    opt.disabled = !s.ollama_ok;
-    opt.textContent = s.ollama_ok ? "Ollama · qwen2.5:3b" : "Ollama · runs locally only";
-    $("#modelSelect").title = s.ollama_ok ? "" : "This server has no Ollama. Run the app on your laptop to use qwen2.5:3b.";
-    $("#modelSelect").value = s.backend;
-    $("#modelDot").className = "dot " + (s.backend === "ollama" ? "ok" : s.ollama_ok ? "" : "warn");
+    const sel = $("#modelSelect"), opt = (v) => sel.querySelector(`option[value="${v}"]`);
+    opt("ollama").disabled = !s.ollama_ok;
+    opt("ollama").textContent = `Ollama · ${s.ollama_model}` + (s.ollama_ok ? "" : " (local only)");
+    opt("groq").disabled = !s.groq_ok;
+    opt("groq").textContent = `Groq · ${s.groq_model}` + (s.groq_ok ? "" : " (no key)");
+    sel.value = s.backend;
+    $("#modelDot").className = "dot " + (s.backend === "mock" ? "warn" : "ok");
     const hint = $("#modelHint");
-    hint.className = "hint" + (s.ollama_ok || s.backend === "mock" ? "" : " warn");
-    hint.textContent = s.backend === "ollama" ? `Lines are labelled by ${s.model} on this server.`
-      : s.ollama_ok ? "Mock keyword rules: instant, no model." : "This hosted demo has no local model, so lines are labelled by keyword rules (mock). Run it on your laptop with Ollama to use qwen2.5:3b.";
+    hint.className = "hint" + (s.backend === "mock" && !s.ollama_ok && !s.groq_ok ? " warn" : "");
+    hint.textContent = s.backend === "ollama" ? `Lines are labelled by ${s.model}, running on this machine.`
+      : s.backend === "groq" ? `Lines are labelled by ${s.model}, a free hosted model.`
+      : s.ollama_ok || s.groq_ok ? "Mock keyword rules: instant, no model."
+      : "No model on this server, so lines are labelled by keyword rules (mock).";
   } catch { $("#modelHint").textContent = "Model status unavailable."; }
 }
 $("#modelSelect").addEventListener("change", async (e) => {
   try {
     const s = await (await api("/api/model", { method: "POST", body: JSON.stringify({ name: e.target.value }) })).json();
-    if (e.target.value === "ollama" && s.backend !== "ollama") toast("Ollama is not available here. Using the mock.");
-    else toast(`Model: ${s.backend === "ollama" ? s.model : "mock keyword rules"}`);
+    if (e.target.value !== s.backend) toast("That model is not available here. Using the mock.", true);
+    else toast(`Model: ${s.backend === "mock" ? "mock keyword rules" : s.model}`);
   } catch (err) { toast(err.message, true); }
   loadStatus();
 });

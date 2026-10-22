@@ -89,7 +89,7 @@ def main():
     memory.set_db(eval_db)
     keys = json.loads((DATA / "answer_key.json").read_text())
     backend = llm.backend()
-    print(f"model backend: {backend}" + (f" ({llm.MODEL})" if backend == "ollama" else ""))
+    print(f"model backend: {backend} ({llm.model_name()})")
 
     runs, per_report = {}, []
     for name, use_critic in [("Graph with Critic", True), ("Graph without Critic", False)]:
@@ -133,9 +133,9 @@ def main():
             "note": f"mean of {repeats} runs; '/' separates the runs",
         }
     else:
-        runs[name] = {"note": "needs a local LLM (Ollama); a keyword mock cannot stand in for a chatbot"}
+        runs[name] = {"note": "needs a real LLM (Ollama or Groq); a keyword mock cannot stand in for a chatbot"}
 
-    meta = {"backend": backend, "model": llm.MODEL if backend == "ollama" else "mock keyword classifier",
+    meta = {"backend": backend, "model": llm.model_name() if backend != "mock" else "mock keyword classifier",
             "reports": len(keys), "generated": time.strftime("%Y-%m-%d %H:%M")}
     (OUT / f"metrics_{backend}.json").write_text(json.dumps({"meta": meta, "runs": runs}, indent=2))
     with open(OUT / f"per_report_{backend}.csv", "w", newline="") as f:

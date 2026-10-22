@@ -9,7 +9,7 @@ Ranjan Verma and Rahul Narkhede
 
 All data is synthetic. This is a classroom proof of concept, not a certified engineering or safety tool.
 
-**Live:** [rig-sight.onrender.com](https://rig-sight.onrender.com/) (runs on the mock model online; see
+**Live:** [rig-sight.onrender.com](https://rig-sight.onrender.com/) (labels lines with a free hosted model, Groq, online; see
 [Deployment](#deployment)).
 **Code:** [github.com/ranjanvrma/rig-sight](https://github.com/ranjanvrma/rig-sight)
 
@@ -93,7 +93,7 @@ the header.
 ## Technology
 
 Python · LangGraph 1.2 (StateGraph, ToolNode, `interrupt()`, SqliteSaver checkpointer) · LangChain Core 1.6 ·
-Ollama with `qwen2.5:3b` (local, free) or a mock classifier · FastAPI + plain HTML/CSS/JavaScript · SQLite · pytest.
+Ollama with `qwen2.5:3b` (local, free), Groq `llama-3.1-8b-instant` (hosted, free tier) or a mock classifier · FastAPI + plain HTML/CSS/JavaScript · SQLite · pytest.
 
 "The model reads, Python counts": the language model only labels log lines. Every number is computed by a tool,
 so the Critic can check it exactly.
@@ -105,7 +105,7 @@ api.py                 FastAPI server: API + the web pages
 web/                   the frontend (index.html, styles.css, app.js, images); no build step
 graph.py               DDRState, the eight nodes, route(), graph build, human-in-the-loop
 tools.py               Executor tools (ToolNode) and Research lookups; all arithmetic
-llm.py                 the only place a model is called: Ollama, mock fallback, chatbot baseline
+llm.py                 the only place a model is called: Ollama, Groq, mock fallback, chatbot baseline
 memory.py              SQLite incident memory, failed cases, engineer feedback
 evaluate.py            scores the 15 reports: with Critic / without Critic / single-prompt chatbot
 data/                  generate_data.py, reports/, answer_key.json, reference files, incidents.sqlite (seed)
@@ -139,7 +139,7 @@ python -m uvicorn api:app --port 8000
 Open http://127.0.0.1:8000 (online: https://rig-sight.onrender.com/). A small FastAPI server (`api.py`) runs the LangGraph agents and streams every agent
 step to the page in `web/` (plain HTML, CSS and JavaScript, no build step): report picker and custom reports, live
 agent pipeline, KPIs, annotated time log, 24-hour timeline, Critic checks, insight report, engineer approve /
-reject, evaluation and memory. The model selector in the top bar switches between Ollama and the mock.
+reject, evaluation and memory. The model selector in the top bar switches between Ollama, Groq and the mock; a model the server cannot reach is greyed out.
 
 Pages are real URLs (`/`, `/evaluation`, `/memory`, `/architecture`, plus a 404 page), rendered on the server with
 their own title, description, canonical URL, Open Graph tags and structured data; `/robots.txt` and `/sitemap.xml`
@@ -218,21 +218,25 @@ not depend on the agents.
 The app never writes to `data/`: it copies the seed memory to `runtime/memory.sqlite` on first use. The
 **Memory** page has a reset button.
 
-## Ollama and the mock fallback
+## Models: Ollama, Groq and the mock fallback
 
 ```bash
 ollama pull qwen2.5:3b
 ```
 
-With Ollama running and the model pulled, the app and `evaluate.py` use it (`RIG_LLM=auto`, the default). Without
-it, a keyword classifier built from `npt_codes.json` takes over, and the top bar, every activity's `labelled_by`
-field and every report say so. Settings:
+With `RIG_LLM=auto` (the default) the app and `evaluate.py` pick, in order: **Ollama** if it is running with the
+model pulled (local, free), then **Groq** if `GROQ_API_KEY` is set (a free hosted model, used online because a free
+server cannot run Ollama), then the **mock** keyword classifier built from `npt_codes.json`. The top bar, every
+activity's `labelled_by` field and every report say which one labelled the lines. If a Groq call fails (for example
+the free tier's per-minute limit), that line falls back to the mock and is labelled `mock`. Settings:
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `RIG_LLM` | `auto` | `auto`, `ollama` or `mock` |
+| `RIG_LLM` | `auto` | `auto`, `ollama`, `groq` or `mock` |
 | `RIG_MODEL` | `qwen2.5:3b` | any Ollama model |
 | `OLLAMA_URL` | `http://127.0.0.1:11434` | Ollama server |
+| `GROQ_API_KEY` | not set | free key from [console.groq.com](https://console.groq.com/keys); never sent to the browser |
+| `RIG_GROQ_MODEL` | `llama-3.1-8b-instant` | any model Groq serves |
 | `RIG_LLM_SUMMARY` | off | `1` lets the model rephrase the summary |
 | `RIG_MEMORY_DB` | `runtime/memory.sqlite` | working memory database |
 
@@ -264,13 +268,14 @@ The app is deployed on **Render** (free web service) from this repository's `mai
 |---|---|
 | Build command | `pip install -r requirements.txt` |
 | Start command | `uvicorn api:app --host 0.0.0.0 --port $PORT` |
-| Environment | `PYTHON_VERSION=3.12`, `RIG_LLM=mock` |
+| Environment | `PYTHON_VERSION=3.12`, `GROQ_API_KEY=<your key>` (and no `RIG_LLM`, or `RIG_LLM=auto`) |
 | Updates | redeploys on every push to `main` |
 | Sleeps | after about 15 minutes without visitors; the next visit takes about a minute |
 
-Free hosts cannot run Ollama, so the online app uses the mock classifier; the real `qwen2.5:3b` runs locally.
+Free hosts cannot run Ollama (the free plan has 512 MB of memory), so the online app labels lines with Groq's
+free `llama-3.1-8b-instant`; without a key it falls back to the mock. `qwen2.5:3b` runs locally.
 Memory and checkpoints live in `runtime/` on the server: they are temporary (wiped when the app restarts, sleeps or
 redeploys) and shared by everyone using it. The Evaluation page shows the committed `qwen2.5:3b` and mock results
-from `results/`. Online, W-02 Day 14 gives 8.0 h NPT straight away (the mock does not make the slip-and-cut
-mistake); locally with Ollama it gives 11.0 h first, and rejecting with `line 7 is planned, not NPT` corrects it to
-8.0 h.
+from `results/`. Locally with Ollama, W-02 Day 14 gives 11.0 h first, and rejecting with `line 7 is planned, not
+NPT` corrects it to 8.0 h; the hosted model may label lines differently, and the engineer review corrects it the
+same way.
