@@ -100,7 +100,9 @@ so the Critic can check it exactly.
 ## Repository
 
 ```
-app.py                 Streamlit UI
+app.py                 Streamlit UI (the CA-3 PoC)
+api.py                 FastAPI server for the web frontend
+web/                   bento-grid frontend (index.html, styles.css, app.js)
 graph.py               DDRState, the eight nodes, route(), graph build, human-in-the-loop
 tools.py               Executor tools (ToolNode) and Research lookups; all arithmetic
 llm.py                 the only place a model is called: Ollama, mock fallback, chatbot baseline
@@ -130,7 +132,18 @@ python -m venv .venv
 pip install -r requirements-dev.txt     # runtime deps + pytest (requirements.txt alone is enough to run the app)
 ```
 
-## Run the app
+## Run the web app (bento frontend)
+
+```bash
+python -m uvicorn api:app --port 8000
+```
+
+Open http://127.0.0.1:8000. A FastAPI server (`api.py`) wraps the same LangGraph agents and streams every agent
+step to a hand-built bento-grid frontend in `web/` (plain HTML, CSS and JavaScript, no build step). It has the same
+features as the Streamlit app: report picker and custom reports, live agent pipeline, KPIs, annotated time log,
+24-hour timeline, Critic checks, insight report, engineer approve / reject, evaluation and memory.
+
+## Run the Streamlit app (CA-3 PoC)
 
 Online, nothing to install: **https://rig-sight.streamlit.app/** (runs on the mock classifier).
 

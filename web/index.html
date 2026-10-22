@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reading the Rig</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="mark" aria-hidden="true"><i></i><i></i><i></i></span>
+    <div>
+      <div class="brand-name">READING THE RIG</div>
+      <div class="brand-sub">Agentic AI for Daily Drilling Reports</div>
+    </div>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-view="analyse" role="tab">Analyse</button>
+    <button class="tab" data-view="evaluation" role="tab">Evaluation</button>
+    <button class="tab" data-view="memory" role="tab">Memory</button>
+    <button class="tab" data-view="architecture" role="tab">Architecture</button>
+  </nav>
+  <div class="model" title="Language model used to label log lines">
+    <span class="dot" id="modelDot"></span>
+    <select id="modelSelect" aria-label="Language model">
+      <option value="ollama">Ollama · qwen2.5:3b</option>
+      <option value="mock">Mock (keyword rules)</option>
+    </select>
+  </div>
+</header>
+
+<main>
+  <!-- ================= ANALYSE ================= -->
+  <section class="view active" id="view-analyse">
+    <div class="bento">
+      <div class="tile control span-5">
+        <div class="tile-label">Daily drilling report</div>
+        <select id="reportSelect" aria-label="Daily drilling report"></select>
+        <div class="report-tag" id="reportTag"></div>
+      </div>
+      <div class="tile control span-4">
+        <div class="tile-label">Agents</div>
+        <label class="switch"><input type="checkbox" id="criticToggle" checked><span class="track"></span>
+          <span>Critic agent <em>checks the work and sends it back</em></span></label>
+        <div class="hint" id="modelHint"></div>
+      </div>
+      <button class="tile run span-3" id="runBtn">
+        <span class="run-kicker">LangGraph</span>
+        <span class="run-label">RUN AGENTS</span>
+        <span class="run-arrow" aria-hidden="true">→</span>
+      </button>
+
+      <div class="tile kpi accent span-3" id="kpiNpt"><div class="tile-label">Non-productive time</div><div class="kpi-value">—</div><div class="kpi-sub">run a report</div></div>
+      <div class="tile kpi span-2" id="kpiHours"><div class="tile-label">Hours logged</div><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></div>
+      <div class="tile kpi span-2" id="kpiDepth"><div class="tile-label">Depth vs plan</div><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></div>
+      <div class="tile kpi span-2" id="kpiRop"><div class="tile-label">ROP</div><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></div>
+      <div class="tile kpi span-3" id="kpiCritic"><div class="tile-label">Critic</div><div class="kpi-value">—</div><div class="kpi-sub">&nbsp;</div></div>
+
+      <div class="tile span-7 tall" id="reportTile">
+        <div class="tile-head"><div class="tile-label">Time log</div><div class="legend" id="legend"></div></div>
+        <div class="ddr" id="ddr"></div>
+        <textarea id="customText" class="hidden" spellcheck="false" aria-label="Custom report text"></textarea>
+      </div>
+      <div class="tile span-5 tall">
+        <div class="tile-head"><div class="tile-label">Agent pipeline</div><div class="live" id="liveBadge">idle</div></div>
+        <div class="pipeline" id="pipeline"></div>
+        <ol class="trace" id="trace"><li class="empty">Agent steps stream here as they happen.</li></ol>
+      </div>
+
+      <div class="tile span-7">
+        <div class="tile-head"><div class="tile-label">Where the 24 hours went</div><div class="cost" id="costBadge"></div></div>
+        <div id="timeline" class="chart"></div>
+        <div id="bars" class="chart"></div>
+      </div>
+      <div class="tile span-5">
+        <div class="tile-label">Critic checks</div>
+        <div id="critic" class="critic"><p class="muted">No checks yet.</p></div>
+      </div>
+
+      <div class="tile span-7 insight-tile">
+        <div class="tile-label">Daily insight report</div>
+        <div id="insight" class="insight"><p class="muted">The draft appears here when the agents finish.</p></div>
+      </div>
+      <div class="tile span-5 review-tile">
+        <div class="tile-label">Engineer review</div>
+        <div id="review" class="review"><p class="muted">Nothing to review yet.</p></div>
+        <div class="tile-label sub">Check against the answer key</div>
+        <div id="answerKey" class="answer-key"><p class="muted">Synthetic reports have a known answer.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= EVALUATION ================= -->
+  <section class="view" id="view-evaluation">
+    <div class="bento" id="evalGrid"></div>
+  </section>
+
+  <!-- ================= MEMORY ================= -->
+  <section class="view" id="view-memory">
+    <div class="bento" id="memGrid"></div>
+  </section>
+
+  <!-- ================= ARCHITECTURE ================= -->
+  <section class="view" id="view-architecture">
+    <div class="bento">
+      <div class="tile span-12 diagram">
+        <div class="tile-label">LangGraph architecture · hub and spoke</div>
+        <a href="/figures/architecture_original.png" target="_blank" rel="noopener">
+          <img src="/figures/architecture_original.png" alt="Architecture diagram of the Reading the Rig agents"></a>
+      </div>
+      <div class="tile span-4"><div class="tile-label">Orchestrator</div><p>Plain Python <code>route()</code> reads the shared state and picks the next agent. No model, fully predictable.</p></div>
+      <div class="tile span-4"><div class="tile-label">Planner · Research</div><p>Plan the work for this report, then pull the well plan, budget, NPT codes and similar past incidents.</p></div>
+      <div class="tile span-4"><div class="tile-label">Executor · ToolNode</div><p>Six Python tools parse, classify, sum, and compute ROP, depth and cost. The model only labels lines.</p></div>
+      <div class="tile span-6"><div class="tile-label">Critic</div><p>Checks 24 h, gaps, overlaps, bad lines, categories and evidence. Sends fixable problems back, at most three times.</p></div>
+      <div class="tile span-6"><div class="tile-label">Engineer</div><p><code>interrupt()</code> pauses the graph. Approve ends the run; reject with a comment re-runs it with your corrections.</p></div>
+    </div>
+  </section>
+</main>
+
+<footer>Synthetic data · classroom proof of concept · not a certified engineering or safety tool · Computed · Sourced · Approved</footer>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>

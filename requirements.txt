@@ -6,3 +6,5 @@ langchain-ollama>=1.1,<2
 streamlit>=1.55,<2
 pandas>=2.2
 altair>=5
+fastapi>=0.115
+uvicorn[standard]>=0.30

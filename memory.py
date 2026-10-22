@@ -7,6 +7,7 @@ to start again from the seed."""
 import os
 import shutil
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
 
 ROOT = Path(__file__).parent
@@ -15,13 +16,19 @@ DEFAULT_DB = Path(os.getenv("RIG_MEMORY_DB", ROOT / "runtime" / "memory.sqlite")
 DB = DEFAULT_DB
 
 
+@contextmanager
 def _con():
+    """Open, commit and always close (an open handle stops Windows deleting the file on reset)."""
     if not DB.exists():
         DB.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(SEED, DB)
     con = sqlite3.connect(DB)
     con.row_factory = sqlite3.Row
-    return con
+    try:
+        with con:
+            yield con
+    finally:
+        con.close()
 
 
 def set_db(path) -> None:
@@ -36,7 +43,8 @@ def use_default() -> None:
 def reset() -> None:
     """Throw away failed cases and engineer decisions; start again from the seed incidents."""
     DB.unlink(missing_ok=True)
-    _con().close()
+    with _con():
+        pass
 
 
 def search_incidents(well_id: str, categories: list[str], limit: int = 4) -> list[dict]:
