@@ -177,7 +177,7 @@ def test_llm_summary_with_invented_number_is_rejected(monkeypatch, run):
 def test_llm_summary_with_only_computed_numbers_is_kept(monkeypatch, run):
     monkeypatch.setattr(llm, "write_summary", lambda facts: "Well W-02 lost 12 hours of NPT on day 10.")
     s, _ = run("W-02_D10")
-    assert "lost 12 hours" in s["draft_report"] and f"summary written by: {llm.MODEL}" in s["draft_report"]
+    assert "lost 12 hours" in s["draft_report"] and f"summary written by: {llm.model_name()}" in s["draft_report"]
 
 
 def test_ollama_unavailable_falls_back_to_mock():

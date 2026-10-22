@@ -3,7 +3,7 @@
 Three runs on the same reports and the same model:
   1. full graph (with Critic)   2. graph without Critic   3. single-prompt chatbot baseline
 Run: python evaluate.py            (RIG_LLM=mock|ollama|auto, default auto)
-Writes results/metrics_<backend>.json and results/per_report_<backend>.csv (backend = ollama or mock)
+Writes results/metrics_<backend>.json and results/per_report_<backend>.csv (backend = gemini, ollama or mock)
 """
 import csv
 import os
@@ -89,7 +89,7 @@ def main():
     memory.set_db(eval_db)
     keys = json.loads((DATA / "answer_key.json").read_text())
     backend = llm.backend()
-    print(f"model backend: {backend}" + (f" ({llm.MODEL})" if backend == "ollama" else ""))
+    print(f"model backend: {backend} ({llm.model_name(backend)})")
 
     runs, per_report = {}, []
     for name, use_critic in [("Graph with Critic", True), ("Graph without Critic", False)]:
@@ -106,7 +106,7 @@ def main():
         per_report += rows
 
     name = "Single-prompt chatbot"
-    if backend == "ollama":
+    if backend in ("ollama", "gemini"):
         # the chatbot's free-form answers vary from run to run, so run it several times and report the spread
         repeats = int(os.getenv("RIG_BASELINE_REPEATS", "3"))
         per_rep, t0 = [], time.time()
@@ -133,9 +133,9 @@ def main():
             "note": f"mean of {repeats} runs; '/' separates the runs",
         }
     else:
-        runs[name] = {"note": "needs a local LLM (Ollama); a keyword mock cannot stand in for a chatbot"}
+        runs[name] = {"note": "needs a language model (Gemini or Ollama); a keyword mock cannot stand in for a chatbot"}
 
-    meta = {"backend": backend, "model": llm.MODEL if backend == "ollama" else "mock keyword classifier",
+    meta = {"backend": backend, "model": llm.model_name(backend),
             "reports": len(keys), "generated": time.strftime("%Y-%m-%d %H:%M")}
     (OUT / f"metrics_{backend}.json").write_text(json.dumps({"meta": meta, "runs": runs}, indent=2))
     with open(OUT / f"per_report_{backend}.csv", "w", newline="") as f:
